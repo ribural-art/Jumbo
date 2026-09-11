@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
+// CEO BIGMIND 555 - VERSION 2
 $data = json_decode(file_get_contents('php://input'), true);
-
 $name = $data['name'];
 $phone = $data['phone'];
 
