@@ -95,11 +95,16 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 
 <script>    
 async function login(){
-  let name = prompt("Andika Izina Ryawe")
-  let phone = prompt("Andika Numero Yawe")
+  let name = document.querySelector('input[type="text"]').value
+  let phone = document.querySelector('input[type="tel"]').value
+  
+  if(name === "" || phone === "") {alert("Uzuza Amazina Byose"); return}
+  
   let res = await fetch('/api/login.php', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, phone})})
   let data = await res.json()
-  if(data.isAdmin) {alert('Murakaza neza CEO 👑'); window.location.href = '/admin.html'} else {alert('Murakaza neza ' + name)}
+  
+  if(data.isAdmin) {alert('Murakaza neza CEO 👑'); window.location.href = '/admin.html'} 
+  else {alert('Murakaza neza ' + name)}
   }
 // FUNCTION YO KWISHYURA
 function pay(amount){
