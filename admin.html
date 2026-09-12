@@ -2,39 +2,73 @@
 <html lang="rw">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JUMBO ROYALTY ADMIN</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-body{background:#000;color:#fff;font-family:Arial;padding:20px}
-h1,h2{color:orange;text-align:center}
-.box{border:2px solid orange;border-radius:15px;padding:15px;margin:15px 0}
-.row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333}
-.green{color:#00ff00;font-weight:bold}
+body {background:#000; color:white; font-family:Arial; margin:0; padding:20px;}
+.orange{color:orange;} .green{color:#00FF00;} .red{color:#dc2626;}
+.card{background:#111; border:2px solid orange; padding:20px; border-radius:10px; margin-bottom:20px;}
+.stats{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;}
+.stat-box{background:#222; padding:15px; border-radius:8px; border-left:4px solid orange; text-align:center;}
+.stat-number{font-size:28px; font-weight:bold; color:#00FF00;}
+table{width:100%; border-collapse:collapse; margin-top:10px;}
+th,td{padding:10px; text-align:left; border-bottom:1px solid #333;}
+th{background:#222; color:orange;}
+.btn{background:orange; color:#000; padding:10px 15px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
 </style>
 </head>
 <body>
-    <h1>🔒 JUMBO ROYALTY ADMIN</h1>
-    <p style="text-align:center">Murakaza neza Mwarimu</p>
+<h1 class="orange">👑 JUMBO ROYALTY ADMIN</h1>
+
+<div class="stats">
+<div class="stat-box">
+<div>ABAKORESHA BOSE</div>
+<div class="stat-number" id="totalUsers">0</div>
+</div>
+<div class="stat-box">
+<div>AMA FARANGA YOSE</div>
+<div class="stat-number" id="totalMoney">0 RWF</div>
+</div>
+<div class="stat-box">
+<div>JACKPOT</div>
+<div class="stat-number green" id="jackpot">0 RWF</div>
+</div>
+</div>
+
+<div class="card">
+<h2 class="orange">ABAKORESHA BASHYASHA</h2>
+<table id="usersTable">
+<thead><tr><th>IZINA</th><th>NUMERO</th><th>ITARIKI</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+// ========== UKOYE: SHYIRAHO IBI 2 BYAWE BYA SUPABASE ==========
+const SUPABASE_URL = 'https://xxx.supabase.co' 
+const SUPABASE_KEY = 'eyJhbGciOiJIxxx' 
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+// ============================================================
+
+async function loadData(){
+    // Kureba abakoresha
+    let { data: users } = await supabase.from('users').select('*').order('created_at', {ascending: false});
+    document.getElementById('totalUsers').innerText = users.length;
+    let tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = '';
+    users.slice(0,10).forEach(u => {
+        tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.phone}</td><td>${new Date(u.created_at).toLocaleDateString()}</td></tr>`;
+    });
     
-    <div class="box">
-        <h2>📊 IBARURISHAMIBARE</h2>
-        <div class="row"><b>Abakoresha Bose:</b> <span class="green">152</span></div>
-        <div class="row"><b>Amafaranga Yinjiye Uyu Munsi:</b> <span class="green">45,300 RWF</span></div>
-        <div class="row"><b>Amafaranga Yose:</b> <span class="green">1,240,000 RWF</span></div>
-        <div class="row"><b>JACKPOT:</b> <span class="green">5,000,000</span></div>
-    </div>
+    // Kureba amafaranga
+    let { data: payments } = await supabase.from('payments').select('amount');
+    let total = payments.reduce((sum, p) => sum + p.amount, 0);
+    document.getElementById('totalMoney').innerText = total.toLocaleString() + ' RWF';
+}
 
-    <div class="box">
-        <h2>👥 ABAKORESHA BASHYASHA</h2>
-        <div class="row"><b>Izina</b><b>Numero</b><b>Plan</b></div>
-        <div class="row">Rachel <span>0788***123</span> <span>J5</span></div>
-        <div class="row">Jean <span>0734***456</span> <span>J3</span></div>
-    </div>
-
-    <div class="box">
-        <h2>📈 INVESTMENT PLANS</h2>
-        <div class="row"><b>J1 10,000frw:</b> <span class="green">12 Abantu</span></div>
-        <div class="row"><b>J5 50,000frw:</b> <span class="green">8 Abantu</span></div>
-        <div class="row"><b>J8 80,000frw:</b> <span class="green">3 Abantu</span></div>
-    </div>
+loadData();
+setInterval(loadData, 5000); // Buri 5sec iravuguruka
+</script>
 </body>
     </html>
