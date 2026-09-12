@@ -2,16 +2,101 @@
 <html lang="rw">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JUMBO ROYALTY</title>
 <style>
-body{background:#000;color:#fff;text-align:center;font-family:Arial;padding-top:80px}
-h1{color:orange;font-size:40px}
-button{background:orange;color:#000;border:none;padding:20px 50px;font-size:20px;border-radius:15px;margin-top:30px;cursor:pointer;font-weight:bold}
+body {background:#000; color:white; font-family:Arial; margin:0; padding:20px;}
+.orange{color:orange;} .green{color:#00FF00;}
+.btn{background:orange; color:#000; padding:12px; border:none; border-radius:8px; width:100%; margin:5px 0; font-weight:bold; cursor:pointer; font-size:15px; text-align:center;}
+.btn:hover{background:#ffaa00;}
+.btn-green{background:#00FF00; color:#000;}
+.btn-red{background:#dc2626; color:#fff;}
+.btn-red:hover{background:#b91c1c;}
+.btn-gray{background:#555; color:#fff;}
+.card{background:#111; border:2px solid orange; padding:20px; border-radius:10px; margin-bottom:20px;}
+.jackpot{border:2px solid #00FF00; background:#001100; padding:15px; text-align:center; border-radius:10px;}
+input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; background:#222; color:white;}
+.plan {background:#222; padding:15px; border-radius:8px; margin:10px 0; border-left:4px solid orange;}
+#mainContent{display:none;}
+.note{background:#222; padding:10px; border-radius:5px; font-size:14px; margin-top:10px; border-left:3px solid #00FF00;}
+.header{text-align:center; margin-bottom:20px;}
+.footer{text-align:center; font-size:12px; color:#555; margin-top:20px;}
+.rule-box {background:#1a1a1a; border-left:4px solid #00FF00; padding:12px; margin:10px 0; border-radius:5px;}
 </style>
 </head>
 <body>
-    <h1>👑 JUMBO ROYALTY 👑</h1>
-    <p>WIN BIG. PLAY SMART.</p>
-    <button onclick="window.location.href='admin.html'">INJIRA MURI ADMIN</button>
+
+<div class="header">
+<h1 class="orange">👑 JUMBO ROYALTY 👑</h1>
+<p>WIN BIG. PLAY SMART.</p>
+</div>
+
+<div class="card" id="loginCard">
+<h2 class="orange">LOGIN / IYANDIKISHE</h2>
+<input type="text" id="name" placeholder="Amazina yawe">
+<input type="tel" id="phone" placeholder="Numero ya MTN/Airtel">
+<button class="btn btn-green" onclick="login()">INJIRA</button>
+<p style="font-size:12px; margin-top:10px;"><a href="admin.html" style="color:gray;">Admin</a></p>
+</div>
+
+<div id="mainContent">
+<button class="btn btn-gray" onclick="logout()">SOHOKA / LOGOUT</button>
+
+<div class="card">
+<h2 class="orange">INVESTMENT PLANS</h2>
+<p>Injiza amafaranga yawe akurire 4% buri munsi iminsi 50</p>
+<div class="plan"><b>J1:</b> 10,000frw = 400frw/buri munsi = 20,000frw<button class="btn" onclick="pay('10000')">INVEST NOW J1</button></div>
+<div class="plan"><b>J2:</b> 20,000frw = 800frw/buri munsi = 40,000frw<button class="btn" onclick="pay('20000')">INVEST NOW J2</button></div>
+<div class="plan"><b>J3:</b> 30,000frw = 1,200frw/buri munsi = 60,000frw<button class="btn" onclick="pay('30000')">INVEST NOW J3</button></div>
+<div class="plan"><b>J4:</b> 40,000frw = 1,600frw/buri munsi = 80,000frw<button class="btn" onclick="pay('40000')">INVEST NOW J4</button></div>
+<div class="plan"><b>J5:</b> 50,000frw = 2,000frw/buri munsi = 100,000frw<button class="btn" onclick="pay('50000')">INVEST NOW J5</button></div>
+</div>
+
+<div class="card">
+<h2 class="orange">TOMBOLA JUMBO</h2>
+<div class="jackpot">
+<h3>JACKPOT: <span id="jackpot" class="green">5,000,000frw</span></h3>
+<p style="color:#00FF00; font-weight:bold; font-size:16px;">⏰ Buri munsi saa 23:00pm DUHEMBA</p>
+</div>
+<p><b>LEV1:</b> 300frw → win 10,000frw <button class="btn btn-red" onclick="pay('300')">GURA TICKET LEV1</button></p>
+<p><b>LEV2:</b> 500frw → win 15,000frw <button class="btn btn-red" onclick="pay('500')">GURA TICKET LEV2</button></p>
+<p><b>LEV3:</b> 1000frw → win 20,000frw <button class="btn btn-red" onclick="pay('1000')">GURA TICKET LEV3</button></p>
+</div>
+
+<div class="card">
+<h2 class="orange">KWISHYURA</h2>
+<button class="btn" onclick="payCustom()">KWISHYURA UBUNDI GICIRO</button>
+<div class="note">Code ya Merchant: <b>*182*8*1*2169779#</b> - Izina: Rachel</div>
+</div>
+
+<div class="footer">
+<p>© 2026 JUMBO ROYALTY. +18 Gusa. Kinira mu busabe.</p>
+</div>
+</div>
+
+<script>
+function login(){
+    if(document.getElementById("name").value == "" || document.getElementById("phone").value == ""){
+        alert("Injiza Amazina na Numero"); return;
+    }
+    localStorage.setItem("jumboUser", document.getElementById("name").value);
+    document.getElementById("loginCard").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+}
+function logout(){
+    localStorage.removeItem("jumboUser");
+    document.getElementById("mainContent").style.display = "none";
+    document.getElementById("loginCard").style.display = "block";
+}
+function pay(amount){
+    let code = `*182*8*1*2169779*${amount}#`;
+    alert("Kanda iyi code:\n\n" + code + "\n\nIzina: Rachel");
+    window.location.href = "tel:" + code;
+}
+function payCustom(){
+    let amount = prompt("Injiza amafaranga:");
+    if(amount) pay(amount);
+}
+</script>
 </body>
-</html>
+    </html>
