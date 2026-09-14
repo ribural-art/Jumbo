@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <title>JUMBO ROYALTY - TOMBOLA PRO</title>
+    <style>
+        *{margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif;}
+        body{background:#000; color:#fff; padding:15px;}
+   .navbar{background:#111; padding:15px 20px; border-bottom:2px solid #FFD700; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;}
+   .navbar.logo{color:#FFD700; font-weight:bold; font-size:18px;}
+   .navbar.links a{color:#fff; text-decoration:none; margin:0 12px; font-size:14px;}
+   .navbar.links a:hover{color:#FFD700;}
+   .navbar.logout{color:#ff4444; cursor:pointer;}
+   .header{text-align:center; padding:20px; background:linear-gradient(90deg, #FFD700, #FFA500); color:#000; border-radius:15px; margin:15px 0;}
+   .countdown{background:#1a1a1a; border:2px solid #FFD700; padding:15px; border-radius:12px; text-align:center; margin-bottom:20px;}
+   .countdown p{color:#FF0000; font-size:28px; font-weight:bold;}
+   .level{background:#0a0a0a; border:2px solid #FFD700; border-radius:15px; padding:18px; margin:15px 0;}
+   .level h2{color:#FFD700; text-align:center; margin-bottom:10px;}
+   .prize{color:#00FF00; font-size:20px; font-weight:bold; text-align:center;}
+   .info{display:flex; justify-content:space-between; margin:8px 0; font-size:13px;}
+   .info.missing{color:#FF4444; font-weight:bold;}
+   .info.myMoney{color:#00FF00; font-weight:bold;}
+   .progress{background:#222; border-radius:10px; height:22px; margin:10px 0; overflow:hidden;}
+   .progress-bar{height:100%; background:linear-gradient(90deg, #00FF00, #00AA00); text-align:center; color:#000; font-weight:bold; line-height:22px; transition:0.3s;}
+   .btn-buy{background:#00FF00; color:#000; padding:14px; border:none; border-radius:10px; font-weight:bold; width:100%; font-size:16px; cursor:pointer;}
+   .btn-buy:disabled{background:#555; color:#888;}
+   .note{color:#FFA500; font-size:11px; text-align:center; margin-top:8px;}
+   .winners{background:#111; border:1px dashed #FFD700; padding:10px; border-radius:10px; margin-top:10px;}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- NAVBAR NKO MURI DASHBOARD -->
+    <div class="navbar">
+        <div class="logo">👑 JUMBO ROYALTY</div>
+        <div class="links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="deposit.html">Deposit</a>
+            <a href="investment.html">Investment</a>
+            <a href="tombola.html">Tombola</a>
+            <a href="admin.html">Admin</a>
+        </div>
+        <div class="logout" onclick="logout()">Gusohoka</div>
+    </div>
+
+    <div class="header">
+        <h1>🎰 JUMBO TOMBOLA PRO 🎰</h1>
+        <p>Buri Lev Ihemba ukwayo | Saa 23:00pm</p>
+    </div>
+
+    <div class="countdown">
+        <h3 style="color:#FFD700;">⏰ IGIHE GISIGAYE</h3>
+        <p id="timer">23:59:59</p>
+    </div>
+
+    <div id="levels"></div>
+
+<script>
+// AMAFARANGA YA SUPABASE - NKAYO MURI DASHBOARD
+const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let currentUser = null;
+const CONFIG = {
+    1: {price: 300, targetPoints: 334, prize: 10000},
+    2: {price: 500, targetPoints: 300, prize: 15000},
+    3: {price: 1000, targetPoints: 200, prize: 20000}
+};
+
+checkLogin();
+setInterval(updateTimer, 1000);
+
+async function checkLogin(){
+    const { data: { user } = await supabase.auth.getUser()
+    if(!user){
+        window.location = 'index.html' // NTA LOGIN = TANGIRA KURI INDEX
+    } else {
+        currentUser = user
+        renderLevels()
+        loadTombolaData()
+        supabase.channel('tombola').on('postgres_changes', {event: '*', schema: 'public', table: 'tombola_tickets'}, loadTombolaData).subscribe()
+    }
+}
+
+function renderLevels(){ /*... nka code yabanje... */
+    let html = '';
+    for(let i=1; i<=3; i++){
+        html += `<div class="level"><h2>${i==1?'🏆':i==2?'👑':'💎'} LEV ${i}</h2><p class="prize">${CONFIG[i].price} Frw → Utsindira ${CONFIG[i].prize.toLocaleString()} Frw</p><div class="info"><span>Target:</span> <b id="lev${i}TargetPoints">${CONFIG[i].targetPoints} Amanota</b></div><div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev${i}MyMoney">0 Frw</b></div><div class="info missing"><span>Ibura:</span> <b id="lev${i}Missing">${CONFIG[i].targetPoints} Amanota</b></div><div class="info"><span>Abaguzi Bose:</span> <b id="lev${i}Users">0</b></div><div class="progress"><div class="progress-bar" id="lev${i}Bar">0%</div></div><button class="btn-buy" id="btn${i}" onclick="buyTicket(${i})">GURA TICKET - ${CONFIG[i].price} Frw</button><p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p><div class="winners" id="lev${i}Winners" style="display:none;"></div></div>`;
+    }
+    document.getElementById('levels').innerHTML = html;
+}
+
+async function buyTicket(level){
+    let price = CONFIG[level].price;
+    let phone = prompt("Andika Numero yawe ya MTN/Airtel:");
+    if(!phone) return;
+    const { data: userData } = await supabase.from('users').select('balance').eq('id', currentUser.id).single()
+    if(userData.balance < price){ alert("Amafaranga ntaboneka. Jya muri Deposit."); return; }
+    document.getElementById('btn'+level).disabled = true;
+    await supabase.from('tombola_tickets').insert([{user_id: currentUser.id, level: level, price: price, phone: phone}])
+    await supabase.from('users').update({balance: userData.balance - price}).eq('id', currentUser.id)
+    alert(`Waguze Ticket ya LEV ${level} neza! 🍀`);
+    document.getElementById('btn'+level).disabled = false;
+}
+
+async function loadTombolaData(){ /*... nka code yabanje... */
+    for(let i=1; i<=3; i++){
+        const { data: allTickets } = await supabase.from('tombola_tickets').select('*').eq('level', i)
+        const { data: myTickets } = await supabase.from('tombola_tickets').select('*').eq('level', i).eq('user_id', currentUser.id)
+        let totalFrw = allTickets.reduce((sum, t) => sum + t.price, 0)
+        let mySpent = myTickets.reduce((sum, t) => sum + t.price, 0)
+        let pointsGot = Math.floor(totalFrw / CONFIG[i].price);
+        let pointsMissing = CONFIG[i].targetPoints - pointsGot; if(pointsMissing < 0) pointsMissing = 0;
+        let percent = Math.min(100, (pointsGot / CONFIG[i].targetPoints) * 100).toFixed(1);
+        document.getElementById('lev'+i+'MyMoney').innerText = mySpent.toLocaleString() + ' Frw';
+        document.getElementById('lev'+i+'Missing').innerText = pointsMissing + ' Amanota';
+        document.getElementById('lev'+i+'Users').innerText = allTickets.length;
+        document.getElementById('lev'+i+'Bar').style.width = percent + '%';
+        document.getElementById('lev'+i+'Bar').innerText = percent + '%';
+    }
+}
+function updateTimer(){ /*... */ }
+function logout(){ supabase.auth.signOut(); window.location = 'index.html' }
+</script>
+</body>
+</html>
