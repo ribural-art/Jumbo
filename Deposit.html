@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <title>JUMBO ROYALTY - Deposit</title>
+    <style>
+        *{margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif;}
+        body{background:#0a0a0a; color:#fff;}
+        .header{background:linear-gradient(90deg, #FFD700, #FFA500); padding:20px; color:#000; font-weight:bold; font-size:20px; display:flex; justify-content:space-between;}
+        .header a{color:#000; text-decoration:none;}
+        .container{padding:20px; max-width:500px; margin:auto;}
+        .card{background:#1a1a1a; border:2px solid #FFD700; border-radius:15px; padding:20px; margin-top:20px;}
+        .card h3{color:#FFD700; text-align:center; margin-bottom:15px;}
+        .payment-box{background:#111; border:2px solid #00FF00; padding:15px; border-radius:10px; margin:15px 0; text-align:center;}
+        .payment-box p{color:#00FF00; font-weight:bold; font-size:16px; margin:5px 0;}
+        .warning{background:#330000; border:1px solid #FF4444; padding:15px; border-radius:10px; margin:15px 0;}
+        .warning h4{color:#FF4444; margin-bottom:8px;}
+        .warning p{font-size:12px; margin:5px 0;}
+        input, select{width:100%; padding:12px; border-radius:8px; border:none; margin:8px 0; background:#333; color:#fff;}
+        .btn{background:#FFD700; color:#000; padding:14px 20px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; margin-top:15px; font-size:16px;}
+        .btn:disabled{background:#555; color:#888;}
+        .note{font-size:12px; color:#aaa; text-align:center; margin-top:10px;}
+        .example{background:#222; padding:10px; border-radius:8px; margin:10px 0; font-size:12px; color:#00FF00;}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="header">
+        <a href="investment.html">⬅ Gusubira Inyuma</a>
+        📤 Kohereza Deposit
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <h3 id="planTitle">Uragura: KING - 50,000 Frw</h3>
+            
+            <div class="payment-box">
+                <p>KWISHYURA</p>
+                <p>Code ya Merchant:</p>
+                <p>*182*8*1*2169779#</p>
+                <p>Izina: Rachel</p>
+                <p style="font-size:12px; color:#aaa;">Kanda iyo code uyihamagare uhereze</p>
+            </div>
+
+            <div class="warning">
+                <h4>⚠️ IKITONDERWA CY'INGENZI</h4>
+                <p>1. Iyi <b>+250 795 927 291</b> ni iya <b>UBUFASHA + REPORT</b> gusa</p>
+                <p>2. <b>NTUHAHAMAGARE</b> kubibazo bisanzwe. Biba muri Group</p>
+            </div>
+
+            <p style="color:#aaa; font-size:13px;">1. Kanda *182*8*1*2169779# uhereze</p>
+            <p style="color:#aaa; font-size:13px;">2. Tegereza SMS yemeje ko wohereje</p>
+            <p style="color:#aaa; font-size:13px;">3. Yuzuza hasi uyohereze</p>
+
+            <select id="method" required>
+                <option value="">Hitamo Uburyo Wabitse</option>
+                <option value="MTN Mobile Money">MTN Mobile Money</option>
+                <option value="Airtel Money">Airtel Money</option>
+            </select>
+            
+            <input type="text" id="tef" placeholder="Andika Transaction ID / Ref" required>
+            
+            <div class="example">
+                <b>Urugero:</b> Ref: 123456789ABC <br>
+                Iyo nomboro uyisanga muri SMS wagenewe
+            </div>
+
+            <input type="number" id="amount" placeholder="Andika Amafaranga wabitse" required>
+            
+            <button class="btn" onclick="sendDeposit()">Ohereza Kuri Admin</button>
+            <p class="note">Admin azemeza muminota 5 → Uhabwe 1000frw + Investment itangire</p>
+        </div>
+    </div>
+
+<script>
+const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// Kwereka plan yatoranyije
+const urlParams = new URLSearchParams(window.location.search);
+const plan = urlParams.get('plan');
+const amount = urlParams.get('amount');
+if(plan && amount){
+    document.getElementById("planTitle").innerText = `Uragura: ${plan} - ${amount} Frw`;
+    document.getElementById("amount").value = amount; // uyishyire auto
+}
+
+async function sendDeposit(){
+    const { data: { user } = await supabase.auth.getUser()
+    if(!user){ 
+        alert("Banza winjire CEO"); 
+        window.location='index.html'; 
+        return; 
+    }
+
+    let method = document.getElementById('method').value;
+    let tef = document.getElementById('tef').value;
+    let amount = document.getElementById('amount').value;
+
+    if(method == "" || tef == "" || amount == ""){
+        alert("Uzuza byose CEO: Uburyo, TEF, na Amafaranga");
+        return;
+    }
+
+    document.querySelector('.btn').disabled = true;
+    document.querySelector('.btn').innerText = "Ohereza...";
+
+    const { error } = await supabase.from('deposits').insert([{
+        user_id: user.id,
+        amount: amount,
+        method: method,
+        tef: tef,
+        status: 'pending'
+    }])
+
+    if(error){ 
+        alert("Byanze: " + error.message);
+        document.querySelector('.btn').disabled = false;
+        document.querySelector('.btn').innerText = "Ohereza Kuri Admin";
+    } else { 
+        alert("Deposit yawe yoherejwe! Admin izayemeza muminota 5.");
+        window.location = 'dashboard.html';
+    }
+}
+</script>
+
+</body>
+</html>
