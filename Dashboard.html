@@ -90,7 +90,7 @@
             </div>
 
             <div class="card">
-                <h3>🏦 Kubikuza Amani</h3>
+                <h3>🏦 Kubikuza Amafaranga</h3>
                 <p>Min: 1000 Frw | Cut: 8%</p>
                 <input type="number" id="withdrawAmount" placeholder="Andika Amafaranga">
                 <p class="locked">Uzabona: <span id="receiveAmount">0</span> Frw | Katwa: <span id="feeAmount">0</span> Frw</p>
@@ -105,29 +105,39 @@ const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-let currentUser = null;
+let currentUserPhone = null;
+
+function getPhoneFromURL(){
+    const params = new URLSearchParams(window.location.search);
+    return params.get('phone');
+}
 
 async function checkLogin(){
-    const { data: { user } } = await supabase.auth.getUser()
-    if(!user){
+    currentUserPhone = getPhoneFromURL();
+    if(!currentUserPhone){
+        alert("Ugomba kwinjira ubanza");
         window.location = 'index.html'
-    } else {
-        currentUser = user
-        document.getElementById('username').innerText = user.email.split('@')[0]
-        loadUserData()
-        generateRefLink(user.id)
+        return;
     }
+    loadUserData()
+    generateRefLink(currentUserPhone)
 }
 
 async function loadUserData(){
-    const { data } = await supabase.from('users').select('*').eq('id', currentUser.id).single()
-    if(data){
-        document.getElementById('balance').innerText = Number(data.balance).toLocaleString() + ' Frw'
-        document.getElementById('refBalance').innerText = Number(data.referral_balance).toLocaleString() + ' Frw'
-        if(data.bonus_claimed){
-            document.getElementById('bonusStatus').innerText = "Wamaze kuyikubikura"
-            document.getElementById('withdrawBtn').disabled = true
-        }
+    const { data, error } = await supabase.from('users').select('*').eq('phone', currentUserPhone).single()
+    if(error || !data){
+        alert("Uyu muntu ntabwo abaho");
+        window.location = 'index.html'
+        return;
+    }
+    
+    document.getElementById('username').innerText = data.name
+    document.getElementById('balance').innerText = Number(data.balance || 0).toLocaleString() + ' Frw'
+    document.getElementById('refBalance').innerText = Number(data.referral_balance || 0).toLocaleString() + ' Frw'
+    
+    if(data.bonus_claimed){
+        document.getElementById('bonusStatus').innerText = "Wamaze kuyikubikura"
+        document.getElementById('withdrawBtn').disabled = true
     }
 }
 
@@ -142,7 +152,7 @@ async function sendDeposit(){
     }
 
     const { error } = await supabase.from('deposits').insert([{
-        user_id: currentUser.id,
+        phone: currentUserPhone,  // TUHINDURA KUKORESHA PHONE
         amount: amount,
         method: method,
         tef: tef,
@@ -153,8 +163,8 @@ async function sendDeposit(){
     else { alert("Deposit yawe yoherejwe! Tegereza Admin ayemeze."); }
 }
 
-function generateRefLink(userId){
-    let link = `https://jumbo-royalty.vercel.app/?ref=${userId}`
+function generateRefLink(phone){
+    let link = `https://jumbo-royalty.vercel.app/?ref=${phone}`
     document.getElementById('refLink').innerText = link
 }
 function copyRef(){
@@ -163,12 +173,13 @@ function copyRef(){
 }
 
 function logout(){
-    supabase.auth.signOut()
     window.location = 'index.html'
 }
 
-// Ibindi nka claimBonus tuzabikurikizaho
+function claimBonus(){ alert("Tuzakora iyi vuba"); }
+function requestWithdraw(){ alert("Tuzakora iyi vuba"); }
+
 checkLogin();
 </script>
 </body>
-  </html>
+    </html>
