@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <title>JUMBO ROYALTY - Dashboard</title>
+    <style>
+        *{margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif;}
+        body{background:#0a0a0a; color:#fff;}
+      .navbar{background:#111; padding:15px 20px; border-bottom:2px solid #FFD700; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;}
+      .navbar.logo{color:#FFD700; font-weight:bold; font-size:18px;}
+      .navbar.links a{color:#fff; text-decoration:none; margin:0 12px; font-size:14px;}
+      .navbar.links a:hover{color:#FFD700;}
+      .navbar.logout{color:#ff4444; cursor:pointer;}
+      .header{background:linear-gradient(90deg, #FFD700, #FFA500); padding:20px; color:#000; font-weight:bold; font-size:20px; text-align:center;}
+      .container{padding:20px; max-width:1200px; margin:auto;}
+      .cards{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:20px;}
+      .card{background:#1a1a1a; border:1px solid #FFD700; border-radius:15px; padding:20px; box-shadow:0 0 15px rgba(255,215,0,0.2);}
+      .card h3{color:#FFD700; margin-bottom:10px;}
+      .balance{font-size:32px; font-weight:bold; color:#00FF00;}
+      .locked{color:#ff4444; font-size:14px;}
+      .ok{color:#00FF00; font-size:14px;}
+      .btn{background:#FFD700; color:#000; padding:12px 20px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; margin-top:10px;}
+      .btn:disabled{background:#555; color:#888; cursor:not-allowed;}
+      .btn2{background:#333; color:#FFD700; padding:12px 20px; border:1px solid #FFD700; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; margin-top:10px;}
+      .timer{font-size:22px; color:#00FF00; text-align:center; font-weight:bold;}
+       input, select{width:100%; padding:10px; border-radius:8px; border:none; margin:8px 0; background:#222; color:#fff;}
+      .ref-box{background:#222; padding:10px; border-radius:8px; margin-top:10px; font-size:12px; word-break:break-all; border:1px dashed #FFD700;}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">👑 JUMBO ROYALTY</div>
+        <div class="links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="deposit.html">Deposit</a>
+            <a href="investment.html">Investment</a>
+            <a href="tombola.html">Tombola</a>
+            <a href="admin.html">Admin</a>
+        </div>
+        <div class="logout" onclick="logout()">Gusohoka</div>
+    </div>
+
+    <div class="header">Welcome CEO <span id="username">...</span></div>
+
+    <div class="container">
+        <div class="cards">
+            <div class="card">
+                <h3>💰 Amafaranga Yanjye</h3>
+                <p class="balance" id="balance">0.00 Frw</p>
+                <p class="ok" id="investmentStatus">✅ Investment: Nta Active</p>
+                <p style="font-size:12px; color:#aaa;">Kora Deposit ya mbere 10k+ uhabwe 1000frw Bonus</p>
+                <button class="btn" onclick="window.location='investment.html'">Tangira Investment</button>
+            </div>
+
+            <div class="card">
+                <h3>📤 Kohereza Deposit</h3>
+                <p style="font-size:12px;">Ohereza kuri: MTN 0788***123 / AIRTEL 0788***456</p>
+                <select id="method">
+                    <option>Hitamo Uburyo wabitse</option>
+                    <option>MTN Mobile Money</option>
+                    <option>Airtel Money</option>
+                    <option>Bank</option>
+                </select>
+                <input type="number" id="amount" placeholder="Andika Amafaranga wabitse">
+                <input type="text" id="tef" placeholder="Andika Transaction ID / TEF">
+                <button class="btn2" onclick="sendDeposit()">Ohereza Deposit</button>
+                <p class="ok" style="margin-top:8px;">Admin azemeza muminota 5 → Deposit izajya kuri Balance</p>
+            </div>
+
+            <div class="card">
+                <h3>🎁 Welcome Bonus Withdraw</h3>
+                <p style="font-size:14px;">Status: <span class="ok" id="bonusStatus">1000frw Iraboneka</span></p>
+                <div id="countdownSection" style="display:none; margin-top:10px;">
+                    <p style="text-align:center; font-size:12px;">Ongera kubikuza nyuma ya:</p>
+                    <p class="timer" id="timer">23:59:59</p>
+                </div>
+                <button class="btn" id="withdrawBtn" onclick="claimBonus()">Kubikuza 1000frw</button>
+            </div>
+
+            <div class="card">
+                <h3>👥 Referral Bonus</h3>
+                <p>Lev 1: <b style="color:#00FF00;">10%</b></p>
+                <p>Lev 2: <b style="color:#00FF00;">2%</b></p>
+                <p>Lev 3: <b style="color:#00FF00;">1%</b></p>
+                <p class="locked">Amafaranga: <span id="refBalance">0 Frw</span></p>
+                <p style="font-size:12px; margin-top:10px;">Link yawe yo kw invita:</p>
+                <div class="ref-box" id="refLink">Loading...</div>
+                <button class="btn2" onclick="copyRef()">Koporora Link</button>
+            </div>
+
+            <div class="card">
+                <h3>🏦 Kubikuza Amani</h3>
+                <p>Min: 1000 Frw | Cut: 8%</p>
+                <input type="number" id="withdrawAmount" placeholder="Andika Amafaranga">
+                <p class="locked">Uzabona: <span id="receiveAmount">0</span> Frw | Katwa: <span id="feeAmount">0</span> Frw</p>
+                <button class="btn" onclick="requestWithdraw()">Saba Kubikuza</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// AMAFARANGA YA SUPABASE YAWE - YUZUJE
+const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let currentUser = null;
+
+async function checkLogin(){
+    const { data: { user } } = await supabase.auth.getUser()
+    if(!user){
+        window.location = 'index.html'
+    } else {
+        currentUser = user
+        document.getElementById('username').innerText = user.email.split('@')[0]
+        loadUserData()
+        generateRefLink(user.id)
+    }
+}
+
+async function loadUserData(){
+    const { data } = await supabase.from('users').select('*').eq('id', currentUser.id).single()
+    if(data){
+        document.getElementById('balance').innerText = Number(data.balance).toLocaleString() + ' Frw'
+        document.getElementById('refBalance').innerText = Number(data.referral_balance).toLocaleString() + ' Frw'
+        if(data.bonus_claimed){
+            document.getElementById('bonusStatus').innerText = "Wamaze kuyikubikura"
+            document.getElementById('withdrawBtn').disabled = true
+        }
+    }
+}
+
+async function sendDeposit(){
+    let amount = document.getElementById('amount').value;
+    let method = document.getElementById('method').value;
+    let tef = document.getElementById('tef').value;
+
+    if(amount == "" || tef == "" || method == "Hitamo Uburyo wabitse"){
+        alert("Uzuza byose: Amafaranga, Uburyo, na Transaction ID");
+        return;
+    }
+
+    const { error } = await supabase.from('deposits').insert([{
+        user_id: currentUser.id,
+        amount: amount,
+        method: method,
+        tef: tef,
+        status: 'pending'
+    }])
+
+    if(error){ alert("Byanze: " + error.message) }
+    else { alert("Deposit yawe yoherejwe! Tegereza Admin ayemeze."); }
+}
+
+function generateRefLink(userId){
+    let link = `https://jumbo-royalty.vercel.app/?ref=${userId}`
+    document.getElementById('refLink').innerText = link
+}
+function copyRef(){
+    navigator.clipboard.writeText(document.getElementById('refLink').innerText)
+    alert("Link ikoporowe!")
+}
+
+function logout(){
+    supabase.auth.signOut()
+    window.location = 'index.html'
+}
+
+// Ibindi nka claimBonus tuzabikurikizaho
+checkLogin();
+</script>
+</body>
+  </html>
