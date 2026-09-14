@@ -4,284 +4,33 @@
     <meta charset="UTF-8">
     <title>JUMBO ROYALTY - Admin PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        *{margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif;}
-        body{background:#0a0a0a; color:#fff;}
-        .top-header{background:linear-gradient(90deg, #FFD700, #FFA500, #FFD700); color:#000; padding:15px; text-align:center; border-bottom:4px solid #000; position:sticky; top:0; z-index:100;}
-        .top-header h1{font-size:20px; font-weight:900;}
-        .top-header p{font-size:11px; font-weight:bold;}
-        .logo{font-size:30px; margin-bottom:5px;}
-        .login-page{display:flex; justify-content:center; align-items:center; height:85vh;}
-        .login-box{background:#1a1a1a; border:2px solid #FFD700; padding:30px; border-radius:15px; width:90%; max-width:400px;}
-        .login-box h2{color:#FFD700; text-align:center; margin-bottom:20px; font-size:24px;}
-        .login-box input{width:100%; padding:14px; border-radius:8px; border:1px solid #333; background:#222; color:#fff; margin:10px 0; font-size:16px;}
-        .btn{background:#FFD700; color:#000; padding:15px; border:none; border-radius:10px; font-weight:bold; width:100%; cursor:pointer; font-size:18px;}
-        .btn:hover{background:#FFA500;}
-        .error{color:#FF4444; text-align:center; margin-top:10px; display:none;}
-        .admin-page{display:none; padding:15px;}
-        .header{background:linear-gradient(90deg, #FFD700, #FFA500); color:#000; padding:20px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;}
-        .logout{background:#FF4444; color:#fff; padding:8px 15px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;}
-        .stats{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:20px 0;}
-        .stat-card{background:#1a1a1a; border:1px solid #FFD700; padding:15px; border-radius:10px; text-align:center;}
-        .stat-card h4{color:#aaa; font-size:12px;}
-        .stat-card p{color:#FFD700; font-size:22px; font-weight:bold; margin-top:5px;}
-        .jackpot-card{grid-column:span 2; background:linear-gradient(90deg, #FF00FF, #FFD700); color:#000; border:2px solid #FF00FF;}
-        .jackpot-card h4{color:#000;}
-        .jackpot-card p{color:#000; font-size:26px;}
-        .tabs{display:flex; gap:10px; margin:20px 0; overflow-x:auto;}
-        .tab{background:#222; padding:10px 15px; border-radius:8px; cursor:pointer; border:1px solid #333; font-size:12px; white-space:nowrap;}
-        .tab.active{background:#FFD700; color:#000; font-weight:bold;}
-        .card{background:#1a1a1a; border-left:4px solid #FFA500; border-radius:10px; padding:15px; margin:10px 0;}
-        .card.withdraw{border-left:4px solid #FF4444;}
-        .card.deposit{border-left:4px solid #00FF00;}
-        .card.tombola{border-left:4px solid #FF00FF; background:#1a001a;}
-        .card.winner{background:#002200; border-left:4px solid #00FF00;}
-        .card.user-card{border-left:4px solid #0088FF;}
-        .info p{margin:4px 0; font-size:13px;}
-        .info b{color:#FFD700;}
-        .btn-group{display:flex; gap:8px; margin-top:10px;}
-        .btn-approve{background:#00FF00; color:#000; padding:10px; border:none; border-radius:6px; font-weight:bold; width:50%; cursor:pointer;}
-        .btn-reject{background:#FF4444; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; width:50%; cursor:pointer;}
-        .btn-draw{background:#FF00FF; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; margin-top:5px; font-size:16px;}
-        .btn-pass{background:#0088FF; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; margin-top:5px;}
-        input{width:100%; padding:10px; border-radius:6px; border:1px solid #333; background:#222; color:#fff; margin-top:5px;}
-        .settings{background:#1a1a1a; padding:15px; border-radius:10px; border:1px solid #FFD700; margin:20px 0;}
-        .loading{text-align:center; color:#FFD700; padding:20px;}
-    </style>
+    <style>*{margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif;} body{background:#0a0a0a; color:#fff;} .top-header{background:linear-gradient(90deg, #FFD700, #FFA500, #FFD700); color:#000; padding:15px; text-align:center; border-bottom:4px solid #000; position:sticky; top:0; z-index:100;} .top-header h1{font-size:20px; font-weight:900;} .top-header p{font-size:11px; font-weight:bold;} .logo{font-size:30px; margin-bottom:5px;} .login-page{display:flex; justify-content:center; align-items:center; height:85vh;} .login-box{background:#1a1a1a; border:2px solid #FFD700; padding:30px; border-radius:15px; width:90%; max-width:400px;} .login-box h2{color:#FFD700; text-align:center; margin-bottom:20px; font-size:24px;} .login-box input{width:100%; padding:14px; border-radius:8px; border:1px solid #333; background:#222; color:#fff; margin:10px 0; font-size:16px;} .btn{background:#FFD700; color:#000; padding:15px; border:none; border-radius:10px; font-weight:bold; width:100%; cursor:pointer; font-size:18px;} .btn:hover{background:#FFA500;} .error{color:#FF4444; text-align:center; margin-top:10px; display:none;} .admin-page{display:none; padding:15px;} .header{background:linear-gradient(90deg, #FFD700, #FFA500); color:#000; padding:20px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;} .logout{background:#FF4444; color:#fff; padding:8px 15px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;} .stats{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:20px 0;} .stat-card{background:#1a1a1a; border:1px solid #FFD700; padding:15px; border-radius:10px; text-align:center;} .stat-card h4{color:#aaa; font-size:12px;} .stat-card p{color:#FFD700; font-size:22px; font-weight:bold; margin-top:5px;} .jackpot-card{grid-column:span 2; background:linear-gradient(90deg, #FF00FF, #FFD700); color:#000; border:2px solid #FF00FF;} .jackpot-card h4{color:#000;} .jackpot-card p{color:#000; font-size:26px;} .tabs{display:flex; gap:10px; margin:20px 0; overflow-x:auto;} .tab{background:#222; padding:10px 15px; border-radius:8px; cursor:pointer; border:1px solid #333; font-size:12px; white-space:nowrap;} .tab.active{background:#FFD700; color:#000; font-weight:bold;} .card{background:#1a1a1a; border-left:4px solid #FFA500; border-radius:10px; padding:15px; margin:10px 0;} .card.withdraw{border-left:4px solid #FF4444;} .card.deposit{border-left:4px solid #00FF00;} .card.tombola{border-left:4px solid #FF00FF; background:#1a001a;} .card.winner{background:#002200; border-left:4px solid #00FF00;} .card.user-card{border-left:4px solid #0088FF;} .info p{margin:4px 0; font-size:13px;} .info b{color:#FFD700;} .btn-group{display:flex; gap:8px; margin-top:10px;} .btn-approve{background:#00FF00; color:#000; padding:10px; border:none; border-radius:6px; font-weight:bold; width:50%; cursor:pointer;} .btn-reject{background:#FF4444; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; width:50%; cursor:pointer;} .btn-draw{background:#FF00FF; color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; margin-top:5px; font-size:16px;} .btn-pass{background:#0088FF; color:#fff; padding:10px; border:none; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; margin-top:5px;} input{width:100%; padding:10px; border-radius:6px; border:1px solid #333; background:#222; color:#fff; margin-top:5px;} .settings{background:#1a1a1a; padding:15px; border-radius:10px; border:1px solid #FFD700; margin:20px 0;} .loading{text-align:center; color:#FFD700; padding:20px;}</style>
 </head>
 <body>
-    <div class="top-header">
-        <div class="logo">👑</div>
-        <h1>JUMBO ROYALTY ADMIN PANEL</h1>
-        <p>SYSTEM YA TOMBOLA & INVESTMENT - RWANDA</p>
-    </div>
-
-    <div class="login-page" id="loginPage">
-        <div class="login-box">
-            <h2>👑 ADMIN LOGIN</h2>
-            <input type="text" id="username" placeholder="Andika Username" value="CEO" readonly>
-            <input type="password" id="password" placeholder="Andika Password">
-            <button class="btn" onclick="login()">INJIRA</button>
-            <p class="error" id="error">Password si yo! Gerageza ukundi.</p>
-        </div>
-    </div>
-
-    <div class="admin-page" id="adminPage">
-        <div class="header"><h2>👑 ROYALTY ADMIN PRO</h2><button class="logout" onclick="logout()">SOHOKA</button></div>
-
-        <div class="settings">
-            <h3 style="color:#FFD700; margin-bottom:10px;">🔒 HINDURA IJAMBO BANGA RYA ADMIN</h3>
-            <input type="password" id="newAdminPass" placeholder="Shyiramo Password Nshya">
-            <button class="btn-pass" onclick="changeAdminPass()">EMEZA</button>
-        </div>
-
-        <div class="stats">
-            <div class="stat-card"><h4>Abakoresha Bose</h4><p id="totalUsers">0</p></div>
-            <div class="stat-card"><h4>Deposit Zose</h4><p id="totalDeposit">0 Frw</p></div>
-            <div class="stat-card"><h4>Withdraw Zose</h4><p id="totalWithdraw">0 Frw</p></div>
-            <div class="stat-card"><h4>Daily Income</h4><p id="dailyIncome">0 Frw</p></div>
-            <div class="stat-card jackpot-card"><h4>👑 JACKPOT YA TOMBOLA</h4><p id="jackpot">0 Frw</p></div>
-        </div>
-
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('deposit', this)">Deposits</div>
-            <div class="tab" onclick="showTab('withdraw', this)">Withdraws</div>
-            <div class="tab" onclick="showTab('tombola', this)">TOMBOLA 👑</div>
-            <div class="tab" onclick="showTab('users', this)">Abakoresha</div>
-        </div>
-
-        <div id="depositTab"><div class="loading">Gupakira data...</div></div>
-        <div id="withdrawTab" style="display:none;"><div class="loading">Gupakira data...</div></div>
-        <div id="tombolaTab" style="display:none;">
-            <h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">🎰 TOMBOLA DRAW - SAA 23:00</h2>
-            <div id="tombolaLevels"></div>
-        </div>
-        <div id="usersTab" style="display:none;">
-            <h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">👥 ABAKORESHA BOSE</h2>
-            <div id="usersList"></div>
-        </div>
-    </div>
-
+    <div class="top-header"><div class="logo">👑</div><h1>JUMBO ROYALTY ADMIN PANEL</h1><p>SYSTEM YA TOMBOLA & INVESTMENT - RWANDA</p></div>
+    <div class="login-page" id="loginPage"><div class="login-box"><h2>👑 ADMIN LOGIN</h2><input type="text" id="username" placeholder="Andika Username" value="CEO" readonly><input type="password" id="password" placeholder="Andika Password"><button class="btn" onclick="login()">INJIRA</button><p class="error" id="error">Password si yo! Gerageza ukundi.</p></div></div>
+    <div class="admin-page" id="adminPage"><div class="header"><h2>👑 ROYALTY ADMIN PRO</h2><button class="logout" onclick="logout()">SOHOKA</button></div><div class="stats"><div class="stat-card"><h4>Abakoresha Bose</h4><p id="totalUsers">0</p></div><div class="stat-card"><h4>Deposit Zose</h4><p id="totalDeposit">0 Frw</p></div><div class="stat-card"><h4>Withdraw Zose</h4><p id="totalWithdraw">0 Frw</p></div><div class="stat-card"><h4>Daily Income</h4><p id="dailyIncome">0 Frw</p></div><div class="stat-card jackpot-card"><h4>👑 JACKPOT YA TOMBOLA</h4><p id="jackpot">0 Frw</p></div></div><div class="tabs"><div class="tab active" onclick="showTab('deposit', this)">Deposits</div><div class="tab" onclick="showTab('withdraw', this)">Withdraws</div><div class="tab" onclick="showTab('tombola', this)">TOMBOLA 👑</div><div class="tab" onclick="showTab('users', this)">Abakoresha</div></div><div id="depositTab"><div class="loading">Gupakira data...</div></div><div id="withdrawTab" style="display:none;"><div class="loading">Gupakira data...</div></div><div id="tombolaTab" style="display:none;"><h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">🎰 TOMBOLA DRAW - SAA 23:00</h2><div id="tombolaLevels"></div></div><div id="usersTab" style="display:none;"><h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">👥 ABAKORESHA BOSE</h2><div id="usersList"></div></div></div>
 <script>
-// 1. SUPABASE CONNECTION - ZIGUME AHANO
 const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-
-let ADMIN_USER = "CEO";
-let ADMIN_PASS = "Jumbo@2026";
-let winners = {1:[], 2:[], 3:[]};
-
-const CONFIG = {
-    lev1: {price: 300, targetFrw: 100000, prize: 10000},
-    lev2: {price: 500, targetFrw: 150000, prize: 15000},
-    lev3: {price: 1000, targetFrw: 200000, prize: 20000}
-};
-
-showLogin();
-loadAllData();
-
-async function login(){
-    let user = document.getElementById('username').value.trim();
-    let pass = document.getElementById('password').value.trim();
-    if(user === ADMIN_USER && pass === ADMIN_PASS){
-        document.getElementById('error').style.display = 'none';
-        showAdmin();
-        loadAllData();
-    } else {
-        document.getElementById('error').style.display = 'block';
-    }
-}
-function logout(){ showLogin(); }
-function showLogin(){ document.getElementById('loginPage').style.display = 'flex'; document.getElementById('adminPage').style.display = 'none'; }
-function showAdmin(){ document.getElementById('loginPage').style.display = 'none'; document.getElementById('adminPage').style.display = 'block'; }
-
-function showTab(tab, el){
-    ['depositTab','withdrawTab','tombolaTab','usersTab'].forEach(id=>document.getElementById(id).style.display='none');
-    document.getElementById(tab+'Tab').style.display = 'block';
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-
-    if(tab === 'users'){ loadUsers(); }
-    if(tab === 'tombola'){ loadTombolaData(); }
-    if(tab === 'deposit'){ loadDeposits(); }
-    if(tab === 'withdraw'){ loadWithdraws(); }
-}
-
-function changeAdminPass(){
-    let newPass = document.getElementById('newAdminPass').value;
-    if(newPass){
-        ADMIN_PASS = newPass;
-        alert('✅ Ijambo Banga rya Admin ryahinduwe!\nNshya ni: ' + newPass);
-        document.getElementById('newAdminPass').value = '';
-    }
-}
-
-async function loadAllData(){
-    await loadStats();
-    await loadTombolaData();
-}
-
-async function loadStats(){
-    const { data: users } = await supabase.from('users').select('id');
-    const { data: deposits } = await supabase.from('deposits').select('amount');
-    const { data: withdraws } = await supabase.from('withdraws').select('amount');
-    const { data: tombola } = await supabase.from('tombola').select('total');
-
-    let totalUsers = users ? users.length : 0;
-    let totalDeposit = deposits ? deposits.reduce((a,b) => a + b.amount, 0) : 0;
-    let totalWithdraw = withdraws ? withdraws.reduce((a,b) => a + b.amount, 0) : 0;
-    let totalJackpot = tombola ? tombola.reduce((a,b) => a + b.total, 0) : 0;
-
-    document.getElementById('totalUsers').innerText = totalUsers;
-    document.getElementById('totalDeposit').innerText = totalDeposit.toLocaleString() + ' Frw';
-    document.getElementById('totalWithdraw').innerText = totalWithdraw.toLocaleString() + ' Frw';
-    document.getElementById('jackpot').innerText = totalJackpot.toLocaleString() + ' Frw';
-}
-
-async function loadTombolaData(){
-    let html = '';
-    for(let i=1; i<=3; i++){
-        const { data } = await supabase.from('tombola').select('*').eq('level', i).single();
-        let total = data ? data.total : 0;
-        let users = data ? data.users_count : 0;
-        let missing = CONFIG['lev'+i].targetFrw - total;
-        if(missing < 0) missing = 0;
-        
-        html += `<div class="card tombola">
-            <div class="info"><p><b>LEVEL ${i}</b> - Ticket: ${CONFIG['lev'+i].price} Frw</p><p><b>Target:</b> ${CONFIG['lev'+i].targetFrw.toLocaleString()} Frw | <b>Abaguzi:</b> ${users}</p><p><b>Jackpot Yinjiye:</b> ${total.toLocaleString()} Frw</p><p><b>Ibura:</b> ${missing.toLocaleString()} Frw</p></div>
-            <div id="winners${i}"></div>
-            <button class="btn-draw" onclick="doDraw(${i})">KURAMO ABATSINZE 5 BA LEV ${i}</button>
-        </div>`;
-    }
-    document.getElementById('tombolaLevels').innerHTML = html;
-}
-
-async function loadUsers(){
-    const { data: users } = await supabase.from('users').select('*');
-    let html = '';
-    if(!users || users.length === 0){
-        html = '<p style="text-align:center; color:#aaa;">Nta mukoresha uraza</p>';
-    } else {
-        users.forEach((user, i)=>{
-            html += `<div class="card user-card">
-                <div class="info">
-                    <p><b>#${i+1} Izina:</b> ${user.name}</p>
-                    <p><b>Tel:</b> ${user.phone}</p>
-                    <p><b>Balance:</b> ${user.balance.toLocaleString()} Frw</p>
-                </div>
-            </div>`;
-        });
-    }
-    document.getElementById('usersList').innerHTML = html;
-}
-
-async function loadDeposits(){
-    const { data } = await supabase.from('deposits').select('*').eq('status', 'pending');
-    let html = '';
-    if(!data || data.length === 0) html = '<p style="text-align:center; color:#aaa;">Nta Deposit ibitereje</p>';
-    else data.forEach(d => {
-        html += `<div class="card deposit">
-            <div class="info">
-                <p><b>Izina:</b> ${d.name} | <b>Tel:</b> ${d.phone}</p>
-                <p><b>Plan:</b> ${d.plan} | <b>Uburyo:</b> ${d.method}</p>
-                <p><b>Transaction ID:</b> ${d.tx_id}</p>
-                <p><b>Amafaranga:</b> ${d.amount.toLocaleString()} Frw</p>
-            </div>
-            <div class="btn-group">
-                <button class="btn-approve" onclick="approveDeposit(${d.id})">EMEZA</button>
-                <button class="btn-reject" onclick="rejectDeposit(${d.id})">ANZA</button>
-            </div>
-        </div>`;
-    });
-    document.getElementById('depositTab').innerHTML = html;
-}
-
-async function loadWithdraws(){
-    const { data } = await supabase.from('withdraws').select('*').eq('status', 'pending');
-    let html = '';
-    if(!data || data.length === 0) html = '<p style="text-align:center; color:#aaa;">Nta Withdraw ibitereje</p>';
-    else data.forEach(w => {
-        html += `<div class="card withdraw">
-            <div class="info">
-                <p><b>Izina:</b> ${w.name} | <b>Tel:</b> ${w.phone}</p>
-                <p><b>Kubikuza:</b> ${w.amount.toLocaleString()} Frw | <b>Balance:</b> ${w.balance.toLocaleString()} Frw</p>
-                <p><b>Numero:</b> ${w.withdraw_phone} | <b>Uburyo:</b> ${w.method}</p>
-            </div>
-            <div class="btn-group">
-                <button class="btn-approve" onclick="approveWithdraw(${w.id})">OHEREZA</button>
-                <button class="btn-reject" onclick="rejectWithdraw(${w.id})">ANZA</button>
-            </div>
-        </div>`;
-    });
-    document.getElementById('withdrawTab').innerHTML = html;
-}
-
-async function approveDeposit(id){
-    await supabase.from('deposits').update({status: 'approved'}).eq('id', id);
-    alert('✅ Deposit Yemejwe!');
-    loadDeposits(); loadStats();
-}
-async function rejectDeposit(id){
-    await supabase.from('deposits').update({status: 'rejected'}).eq('id', id);
-    alert('❌ Deposit Yanwe!');
-    loadDeposits();
-}
-async function approveWithdraw(id){
-    await supabase.from('withdraws').update({status: 'approved'}).eq('id', id);
-    alert('✅ Withdraw Yoherejwe!');
-    loadWithdraws(); loadStats();
-}
-async function rejectWithdraw(id){
-    await supabase.from('withdraws').update({status: 'rejected'}).eq('id', id);
-    alert('❌ Withdraw Yanwe!');
-    loadWithdraws();
-}
-async function doDraw(level){
-    const { data: users } = await supabase.from('tombola_tickets').select('phone').eq('level', level);
-    if(!users || users.length < 5){ alert("Ntabwo bigeze ku bantu 5. Abaguzi b'ubu: " + (users?users.length:0)); return; }
-    alert("🎉 Hatowe abatsinze 5 ba LEV " + level + "!");
-}
+let ADMIN_USER = "CEO"; let ADMIN_PASS = "Jumbo@2026"; let winners = {1:[], 2:[], 3:[]};
+const CONFIG = {lev1: {price: 300, targetFrw: 100000, prize: 10000}, lev2: {price: 500, targetFrw: 150000, prize: 15000}, lev3: {price: 1000, targetFrw: 200000, prize: 20000}};
+showLogin(); loadAllData();
+async function login(){let user = document.getElementById('username').value.trim(); let pass = document.getElementById('password').value.trim(); if(user === ADMIN_USER && pass === ADMIN_PASS){document.getElementById('error').style.display = 'none'; showAdmin(); loadAllData();} else {document.getElementById('error').style.display = 'block';}}
+function logout(){ showLogin(); } function showLogin(){ document.getElementById('loginPage').style.display = 'flex'; document.getElementById('adminPage').style.display = 'none'; } function showAdmin(){ document.getElementById('loginPage').style.display = 'none'; document.getElementById('adminPage').style.display = 'block'; }
+function showTab(tab, el){['depositTab','withdrawTab','tombolaTab','usersTab'].forEach(id=>document.getElementById(id).style.display='none'); document.getElementById(tab+'Tab').style.display = 'block'; document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); if(tab === 'users'){ loadUsers(); } if(tab === 'tombola'){ loadTombolaData(); } if(tab === 'deposit'){ loadDeposits(); } if(tab === 'withdraw'){ loadWithdraws(); }}
+async function loadAllData(){await loadStats(); await loadTombolaData();}
+async function loadStats(){const { data: users } = await supabase.from('users').select('id'); const { data: deposits } = await supabase.from('deposits').select('amount'); const { data: withdraws } = await supabase.from('withdraws').select('amount'); const { data: tombola } = await supabase.from('tombola').select('total'); let totalUsers = users ? users.length : 0; let totalDeposit = deposits ? deposits.reduce((a,b) => a + b.amount, 0) : 0; let totalWithdraw = withdraws ? withdraws.reduce((a,b) => a + b.amount, 0) : 0; let totalJackpot = tombola ? tombola.reduce((a,b) => a + b.total, 0) : 0; document.getElementById('totalUsers').innerText = totalUsers; document.getElementById('totalDeposit').innerText = totalDeposit.toLocaleString() + ' Frw'; document.getElementById('totalWithdraw').innerText = totalWithdraw.toLocaleString() + ' Frw'; document.getElementById('jackpot').innerText = totalJackpot.toLocaleString() + ' Frw';}
+async function loadTombolaData(){let html = ''; for(let i=1; i<=3; i++){const { data } = await supabase.from('tombola').select('*').eq('level', i).single(); let total = data ? data.total : 0; let users = data ? data.users_count : 0; let missing = CONFIG['lev'+i].targetFrw - total; if(missing < 0) missing = 0; html += `<div class="card tombola"><div class="info"><p><b>LEVEL ${i}</b> - Ticket: ${CONFIG['lev'+i].price} Frw</p><p><b>Target:</b> ${CONFIG['lev'+i].targetFrw.toLocaleString()} Frw | <b>Abaguzi:</b> ${users}</p><p><b>Jackpot Yinjiye:</b> ${total.toLocaleString()} Frw</p><p><b>Ibura:</b> ${missing.toLocaleString()} Frw</p></div><div id="winners${i}"></div><button class="btn-draw" onclick="doDraw(${i})">KURAMO ABATSINZE 5 BA LEV ${i}</button></div>`;} document.getElementById('tombolaLevels').innerHTML = html;}
+async function loadUsers(){const { data: users } = await supabase.from('users').select('*'); let html = ''; if(!users || users.length === 0){html = '<p style="text-align:center; color:#aaa;">Nta mukoresha uraza</p>';} else {users.forEach((user, i)=>{html += `<div class="card user-card"><div class="info"><p><b>#${i+1} Izina:</b> ${user.name}</p><p><b>Tel:</b> ${user.phone}</p><p><b>Balance:</b> ${user.balance.toLocaleString()} Frw</p></div></div>`;});} document.getElementById('usersList').innerHTML = html;}
+async function loadDeposits(){const { data } = await supabase.from('deposits').select('*').eq('status', 'pending'); let html = ''; if(!data || data.length === 0) html = '<p style="text-align:center; color:#aaa;">Nta Deposit ibitereje</p>'; else data.forEach(d => {html += `<div class="card deposit"><div class="info"><p><b>Izina:</b> ${d.name} | <b>Tel:</b> ${d.phone}</p><p><b>Plan:</b> ${d.plan} | <b>Uburyo:</b> ${d.method}</p><p><b>Transaction ID:</b> ${d.tx_id}</p><p><b>Amafaranga:</b> ${d.amount.toLocaleString()} Frw</p></div><div class="btn-group"><button class="btn-approve" onclick="approveDeposit(${d.id})">EMEZA</button><button class="btn-reject" onclick="rejectDeposit(${d.id})">ANZA</button></div></div>`;}); document.getElementById('depositTab').innerHTML = html;}
+async function loadWithdraws(){const { data } = await supabase.from('withdraws').select('*').eq('status', 'pending'); let html = ''; if(!data || data.length === 0) html = '<p style="text-align:center; color:#aaa;">Nta Withdraw ibitereje</p>'; else data.forEach(w => {html += `<div class="card withdraw"><div class="info"><p><b>Izina:</b> ${w.name} | <b>Tel:</b> ${w.phone}</p><p><b>Kubikuza:</b> ${w.amount.toLocaleString()} Frw | <b>Balance:</b> ${w.balance.toLocaleString()} Frw</p><p><b>Numero:</b> ${w.withdraw_phone} | <b>Uburyo:</b> ${w.method}</p></div><div class="btn-group"><button class="btn-approve" onclick="approveWithdraw(${w.id})">OHEREZA</button><button class="btn-reject" onclick="rejectWithdraw(${w.id})">ANZA</button></div></div>`;}); document.getElementById('withdrawTab').innerHTML = html;}
+async function approveDeposit(id){await supabase.from('deposits').update({status: 'approved'}).eq('id', id); alert('✅ Deposit Yemejwe!'); loadDeposits(); loadStats();}
+async function rejectDeposit(id){await supabase.from('deposits').update({status: 'rejected'}).eq('id', id); alert('❌ Deposit Yanwe!'); loadDeposits();}
+async function approveWithdraw(id){await supabase.from('withdraws').update({status: 'approved'}).eq('id', id); alert('✅ Withdraw Yoherejwe!'); loadWithdraws(); loadStats();}
+async function rejectWithdraw(id){await supabase.from('withdraws').update({status: 'rejected'}).eq('id', id); alert('❌ Withdraw Yanwe!'); loadWithdraws();}
+async function doDraw(level){const { data: users } = await supabase.from('tombola_tickets').select('phone').eq('level', level); if(!users || users.length < 5){ alert("Ntabwo bigeze ku bantu 5. Abaguzi b'ubu: " + (users?users.length:0)); return; } alert("🎉 Hatowe abatsinze 5 ba LEV " + level + "!");}
 </script>
 </body>
-            </html>
+    </html>
