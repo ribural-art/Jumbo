@@ -69,6 +69,12 @@
     <div class="admin-page" id="adminPage">
         <div class="header"><h2>👑 ROYALTY ADMIN PRO</h2><button class="logout" onclick="logout()">SOHOKA</button></div>
 
+        <div class="settings">
+            <h3 style="color:#FFD700; margin-bottom:10px;">🔒 HINDURA IJAMBO BANGA RYA ADMIN</h3>
+            <input type="password" id="newAdminPass" placeholder="Shyiramo Password Nshya">
+            <button class="btn-pass" onclick="changeAdminPass()">EMEZA</button>
+        </div>
+
         <div class="stats">
             <div class="stat-card"><h4>Abakoresha Bose</h4><p id="totalUsers">0</p></div>
             <div class="stat-card"><h4>Deposit Zose</h4><p id="totalDeposit">0 Frw</p></div>
@@ -86,12 +92,18 @@
 
         <div id="depositTab"><div class="loading">Gupakira data...</div></div>
         <div id="withdrawTab" style="display:none;"><div class="loading">Gupakira data...</div></div>
-        <div id="tombolaTab" style="display:none;"><h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">🎰 TOMBOLA DRAW - SAA 23:00</h2><div id="tombolaLevels"></div></div>
-        <div id="usersTab" style="display:none;"><h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">👥 ABAKORESHA BOSE</h2><div id="usersList"></div></div>
+        <div id="tombolaTab" style="display:none;">
+            <h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">🎰 TOMBOLA DRAW - SAA 23:00</h2>
+            <div id="tombolaLevels"></div>
+        </div>
+        <div id="usersTab" style="display:none;">
+            <h2 style="color:#FFD700; margin-bottom:15px; text-align:center;">👥 ABAKORESHA BOSE</h2>
+            <div id="usersList"></div>
+        </div>
     </div>
 
 <script>
-// 1. IBI BIGOMBA KUBA MURI VERCEL ENVIRONMENT VARIABLES
+// 1. SUPABASE CONNECTION - ZIGUME AHANO
 const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
@@ -136,6 +148,15 @@ function showTab(tab, el){
     if(tab === 'withdraw'){ loadWithdraws(); }
 }
 
+function changeAdminPass(){
+    let newPass = document.getElementById('newAdminPass').value;
+    if(newPass){
+        ADMIN_PASS = newPass;
+        alert('✅ Ijambo Banga rya Admin ryahinduwe!\nNshya ni: ' + newPass);
+        document.getElementById('newAdminPass').value = '';
+    }
+}
+
 async function loadAllData(){
     await loadStats();
     await loadTombolaData();
@@ -163,7 +184,7 @@ async function loadTombolaData(){
     for(let i=1; i<=3; i++){
         const { data } = await supabase.from('tombola').select('*').eq('level', i).single();
         let total = data ? data.total : 0;
-        let users = data ? data.users : 0;
+        let users = data ? data.users_count : 0;
         let missing = CONFIG['lev'+i].targetFrw - total;
         if(missing < 0) missing = 0;
         
@@ -199,7 +220,7 @@ async function loadDeposits(){
     const { data } = await supabase.from('deposits').select('*').eq('status', 'pending');
     let html = '';
     if(!data || data.length === 0) html = '<p style="text-align:center; color:#aaa;">Nta Deposit ibitereje</p>';
-    data.forEach(d => {
+    else data.forEach(d => {
         html += `<div class="card deposit">
             <div class="info">
                 <p><b>Izina:</b> ${d.name} | <b>Tel:</b> ${d.phone}</p>
@@ -220,7 +241,7 @@ async function loadWithdraws(){
     const { data } = await supabase.from('withdraws').select('*').eq('status', 'pending');
     let html = '';
     if(!data || data.length === 0) html = '<p style="text-align:center; color:#aaa;">Nta Withdraw ibitereje</p>';
-    data.forEach(w => {
+    else data.forEach(w => {
         html += `<div class="card withdraw">
             <div class="info">
                 <p><b>Izina:</b> ${w.name} | <b>Tel:</b> ${w.phone}</p>
@@ -241,31 +262,26 @@ async function approveDeposit(id){
     alert('✅ Deposit Yemejwe!');
     loadDeposits(); loadStats();
 }
-
 async function rejectDeposit(id){
     await supabase.from('deposits').update({status: 'rejected'}).eq('id', id);
     alert('❌ Deposit Yanwe!');
     loadDeposits();
 }
-
 async function approveWithdraw(id){
     await supabase.from('withdraws').update({status: 'approved'}).eq('id', id);
     alert('✅ Withdraw Yoherejwe!');
     loadWithdraws(); loadStats();
 }
-
 async function rejectWithdraw(id){
     await supabase.from('withdraws').update({status: 'rejected'}).eq('id', id);
     alert('❌ Withdraw Yanwe!');
     loadWithdraws();
 }
-
 async function doDraw(level){
     const { data: users } = await supabase.from('tombola_tickets').select('phone').eq('level', level);
-    if(users.length < 5){ alert("Ntabwo bigeze ku bantu 5. Abaguzi b'ubu: " + users.length); return; }
-    // ... logic yo gutoranya abatsinze ...
+    if(!users || users.length < 5){ alert("Ntabwo bigeze ku bantu 5. Abaguzi b'ubu: " + (users?users.length:0)); return; }
     alert("🎉 Hatowe abatsinze 5 ba LEV " + level + "!");
 }
 </script>
 </body>
-    </html>
+            </html>
