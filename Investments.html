@@ -11,7 +11,7 @@
         .container{padding:20px; max-width:1200px; margin:auto;}
         .title{text-align:center; color:#FFD700; font-size:24px; margin:20px 0;}
         .plans{display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px;}
-        .plan{background:#1a1a1a; border:2px solid #FFD700; border-radius:15px; padding:20px; text-align:center; transition:0.3s; position:relative;}
+        .plan{background:#1a1a1a; border:2px solid #FFD700; border-radius:15px; padding:20px; text-align:center; transition:0.3s; position:relative; cursor:pointer;}
         .plan:hover{transform:scale(1.05); box-shadow:0 0 20px rgba(255,215,0,0.4);}
         .plan h3{color:#FFD700; font-size:22px;}
         .price{font-size:32px; color:#00FF00; font-weight:bold; margin:10px 0;}
@@ -22,6 +22,7 @@
         .btn:hover{background:#FFA500;}
         .badge{background:#FF4444; color:#fff; padding:5px 10px; border-radius:20px; font-size:12px; position:absolute; top:10px; right:10px;}
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="header">
@@ -35,7 +36,6 @@
         
         <div class="plans">
             
-            <!-- PLAN 1: 10K -->
             <div class="plan" onclick="buyPlan('STARTER', 10000)">
                 <h3>STARTER</h3>
                 <p class="price">10,000 Frw</p>
@@ -45,7 +45,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 2: 20K -->
             <div class="plan" onclick="buyPlan('ROYAL', 20000)">
                 <span class="badge">ZIMENYEREWE</span>
                 <h3>ROYAL</h3>
@@ -56,7 +55,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 3: 30K -->
             <div class="plan" onclick="buyPlan('PRINCE', 30000)">
                 <h3>PRINCE</h3>
                 <p class="price">30,000 Frw</p>
@@ -66,7 +64,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 4: 40K -->
             <div class="plan" onclick="buyPlan('DUKE', 40000)">
                 <span class="badge">POPULAR</span>
                 <h3>DUKE</h3>
@@ -77,7 +74,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 5: 50K -->
             <div class="plan" onclick="buyPlan('KING', 50000)">
                 <span class="badge">VIP</span>
                 <h3>KING</h3>
@@ -88,7 +84,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 6: 60K -->
             <div class="plan" onclick="buyPlan('EMPEROR', 60000)">
                 <span class="badge">HOT</span>
                 <h3>EMPEROR</h3>
@@ -99,7 +94,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 7: 70K -->
             <div class="plan" onclick="buyPlan('LEGEND', 70000)">
                 <h3>LEGEND</h3>
                 <p class="price">70,000 Frw</p>
@@ -109,7 +103,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 8: 80K -->
             <div class="plan" onclick="buyPlan('DIAMOND', 80000)">
                 <span class="badge">DIAMOND</span>
                 <h3>DIAMOND</h3>
@@ -120,7 +113,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 9: 90K -->
             <div class="plan" onclick="buyPlan('PLATINUM', 90000)">
                 <h3>PLATINUM</h3>
                 <p class="price">90,000 Frw</p>
@@ -130,7 +122,6 @@
                 <button class="btn">Gura Iyi Plan</button>
             </div>
 
-            <!-- PLAN 10: 100K -->
             <div class="plan" onclick="buyPlan('GOD', 100000)">
                 <span class="badge">👑 GOD</span>
                 <h3>GOD</h3>
@@ -145,4 +136,34 @@
     </div>
 
 <script>
-function buyPlan
+const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+async function buyPlan(planName, planAmount){
+    const { data: { user } = await supabase.auth.getUser();
+    
+    if(!user){ 
+        alert("Banza winjire CEO"); 
+        window.location='index.html'; 
+        return; 
+    }
+
+    // 1. DUREBA NIBA AFITE INVESTMENT IRI KURI KURI
+    const { data: active } = await supabase.from('level_upgrades')
+    .select('*').eq('user_id', user.id).eq('status','active').single();
+
+    if(active){
+        alert("Ufite Investment ikiri gukora. Tegereza irangize ubanze.");
+        return;
+    }
+
+    // 2. DUHITAMO PLAN → TUJYANA KU DEPOSIT
+    // Tuzamufasha deposit yayo abe ariyo afata
+    window.location.href = `deposit.html?plan=${planName}&amount=${planAmount}`;
+}
+
+</script>
+
+</body>
+            </html>
