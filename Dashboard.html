@@ -7,10 +7,10 @@
         *{margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif;}
         body{background:#0a0a0a; color:#fff;}
       .navbar{background:#111; padding:15px 20px; border-bottom:2px solid #FFD700; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;}
-      .navbar.logo{color:#FFD700; font-weight:bold; font-size:18px;}
-      .navbar.links a{color:#fff; text-decoration:none; margin:0 12px; font-size:14px;}
-      .navbar.links a:hover{color:#FFD700;}
-      .navbar.logout{color:#ff4444; cursor:pointer;}
+      .navbar .logo{color:#FFD700; font-weight:bold; font-size:18px;}
+      .navbar .links a{color:#fff; text-decoration:none; margin:0 12px; font-size:14px;}
+      .navbar .links a:hover{color:#FFD700;}
+      .navbar .logout{color:#ff4444; cursor:pointer;}
       .header{background:linear-gradient(90deg, #FFD700, #FFA500); padding:20px; color:#000; font-weight:bold; font-size:20px; text-align:center;}
       .container{padding:20px; max-width:1200px; margin:auto;}
       .cards{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:20px;}
@@ -71,10 +71,6 @@
             <div class="card">
                 <h3>🎁 Welcome Bonus Withdraw</h3>
                 <p style="font-size:14px;">Status: <span class="ok" id="bonusStatus">1000frw Iraboneka</span></p>
-                <div id="countdownSection" style="display:none; margin-top:10px;">
-                    <p style="text-align:center; font-size:12px;">Ongera kubikuza nyuma ya:</p>
-                    <p class="timer" id="timer">23:59:59</p>
-                </div>
                 <button class="btn" id="withdrawBtn" onclick="claimBonus()">Kubikuza 1000frw</button>
             </div>
 
@@ -100,45 +96,39 @@
     </div>
 
 <script>
-// AMAFARANGA YA SUPABASE YAWE - YUZUJE
+// AMAFARANGA YA SUPABASE YAWE
 const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-let currentUserPhone = null;
-
-function getPhoneFromURL(){
-    const params = new URLSearchParams(window.location.search);
-    return params.get('phone');
-}
+let currentUserId = null;
 
 async function checkLogin(){
-    currentUserPhone = getPhoneFromURL();
-    if(!currentUserPhone){
+    // 1. DUREBA NIBA UMUNTU YARINJIYE UKURI
+    const { data: { user } = await supabase.auth.getUser();
+    
+    if(!user){
         alert("Ugomba kwinjira ubanza");
         window.location = 'index.html'
         return;
     }
+    currentUserId = user.id;
     loadUserData()
-    generateRefLink(currentUserPhone)
+    generateRefLink(currentUserId)
 }
 
 async function loadUserData(){
-    const { data, error } = await supabase.from('users').select('*').eq('phone', currentUserPhone).single()
+    // 2. DUKURA AMAKURU MURI PROFILES DUKORESHEJE ID
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUserId).single()
     if(error || !data){
-        alert("Uyu muntu ntabwo abaho");
-        window.location = 'index.html'
+        alert("Profile ntabwo ibaho");
         return;
     }
     
-    document.getElementById('username').innerText = data.name
+    document.getElementById('username').innerText = data.username
     document.getElementById('balance').innerText = Number(data.balance || 0).toLocaleString() + ' Frw'
-    document.getElementById('refBalance').innerText = Number(data.referral_balance || 0).toLocaleString() + ' Frw'
-    
-    if(data.bonus_claimed){
-        document.getElementById('bonusStatus').innerText = "Wamaze kuyikubikura"
-        document.getElementById('withdrawBtn').disabled = true
-    }
+    // Iyo ufite column ya referral_balance uyongeze
+    // document.getElementById('refBalance').innerText = Number(data.referral_balance || 0).toLocaleString() + ' Frw'
 }
 
 async function sendDeposit(){
@@ -151,8 +141,9 @@ async function sendDeposit(){
         return;
     }
 
+    // 3. DUKORESHA USER_ID AHO KURI PHONE
     const { error } = await supabase.from('deposits').insert([{
-        phone: currentUserPhone,  // TUHINDURA KUKORESHA PHONE
+        user_id: currentUserId, 
         amount: amount,
         method: method,
         tef: tef,
@@ -163,8 +154,8 @@ async function sendDeposit(){
     else { alert("Deposit yawe yoherejwe! Tegereza Admin ayemeze."); }
 }
 
-function generateRefLink(phone){
-    let link = `https://jumbo-royalty.vercel.app/?ref=${phone}`
+function generateRefLink(userId){
+    let link = `https://jumbo-royalty.vercel.app/?ref=${userId}`
     document.getElementById('refLink').innerText = link
 }
 function copyRef(){
@@ -172,7 +163,8 @@ function copyRef(){
     alert("Link ikoporowe!")
 }
 
-function logout(){
+async function logout(){
+    await supabase.auth.signOut()
     window.location = 'index.html'
 }
 
@@ -182,4 +174,4 @@ function requestWithdraw(){ alert("Tuzakora iyi vuba"); }
 checkLogin();
 </script>
 </body>
-    </html>
+            </html>
