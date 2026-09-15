@@ -87,7 +87,8 @@ if(plan && amount){
 }
 
 async function sendDeposit(){
-    const { data: { user } = await supabase.auth.getUser()
+    const { data: { user } = await supabase.auth.getUser(); // <- HANO NAKOSOJE
+    
     if(!user){ 
         alert("Banza winjire CEO"); 
         window.location='index.html'; 
@@ -108,7 +109,7 @@ async function sendDeposit(){
 
     const { error } = await supabase.from('deposits').insert([{
         user_id: user.id,
-        amount: amount,
+        amount: Number(amount),
         method: method,
         tef: tef,
         status: 'pending'
@@ -126,4 +127,4 @@ async function sendDeposit(){
 </script>
 
 </body>
-</html>
+            </html>
