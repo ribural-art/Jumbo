@@ -18,6 +18,7 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 .tabs{display:flex; gap:10px; margin-bottom:15px;}
 .tab-btn{flex:1; background:#222; color:white;}
 .tab-btn.active{background:orange; color:#000;}
+.error{color:red; font-size:12px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -28,7 +29,6 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 <p>WIN BIG. PLAY SMART.</p>
 </div>
 
-<!-- PART 1: LOGIN / REGISTER IMBERE -->
 <div class="card" id="authCard">
 <h2 class="orange">IYANDIKISHE / INJIRA</h2>
 
@@ -38,37 +38,33 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 </div>
 
 <div id="loginForm">
-<input type="tel" id="loginPhone" placeholder="Numero ya MTN/Airtel">
+<input type="email" id="loginEmail" placeholder="Email yawe">
 <input type="password" id="loginPass" placeholder="Ijambo ry'ibanga">
+<p id="loginError" class="error"></p>
 <button class="btn btn-green" onclick="login()">INJIRA</button>
 </div>
 
 <div id="registerForm" style="display:none;">
 <input type="text" id="regName" placeholder="Amazina yawe">
-<input type="tel" id="regPhone" placeholder="Numero ya MTN/Airtel">
+<input type="email" id="regEmail" placeholder="Email yawe"> <!-- TWAHINDUIYE HANO -->
 <input type="password" id="regPass" placeholder="Shiraho Ijambo ry'ibanga">
+<input type="text" id="regPhone" placeholder="Numero ya MTN/Airtel"> <!-- TWAJYE TUZIBIKA NA YO -->
 <input type="text" id="regRef" placeholder="Code yo kwinjizwamo - Ntiyemewe">
+<p id="regError" class="error"></p>
 <button class="btn btn-green" onclick="register()">IYANDIKISHE</button>
 </div>
 
 <p style="font-size:12px; margin-top:10px;"><a href="admin.html" style="color:gray;">Admin</a></p>
 </div>
 
-<!-- PART 2: AMATEGEKO HASI -->
 <div class="card">
 <h2 class="orange">AMABWIRIZA YA JUMBO ROYALTY</h2>
 <div class="rule-box">
 <p>1. <b>4% buri munsi</b> iminsi 50. Win big, Play smart</p>
 <p>2. <b>Tombola:</b> Buri munsi saa 23:00pm duhemba abantu 5 kuri buri Level</p>
-<p>3. <b>Kwiyandikisha ni Ubuntu.</b> Ufite imyaka 18+</p>
 </div>
-
-<h3 class="orange">AMA GROUP YACU</h3>
-<a href="https://chat.whatsapp.com/FGtIDTpV7I7IaYFm4Ygebn" class="btn btn-green" target="_blank">WHATSAPP GROUP</a>
-<a href="https://t.me/riyaltygh" class="btn" target="_blank">TELEGRAM GROUP</a>
-
 <div class="footer">
-<p>© 2026 JUMBO ROYALTY. +18 Gusa. Kinira mu busabe.</p>
+<p>© 2026 JUMBO ROYALTY. +18 Gusa.</p>
 </div>
 </div>
 
@@ -93,32 +89,54 @@ function showTab(tab){
 
 async function register(){
     const name = document.getElementById("regName").value;
-    const phone = document.getElementById("regPhone").value;
+    const email = document.getElementById("regEmail").value; // EMAIL
+    const phone = document.getElementById("regPhone").value; // NUMERO
     const pass = document.getElementById("regPass").value;
     const ref = document.getElementById("regRef").value;
+    document.getElementById("regError").innerText = "";
 
-    if(!name ||!phone ||!pass){ alert("Uzuza byose"); return; }
+    if(!name ||!email ||!pass){ alert("Uzuza Amazina, Email na Password"); return; }
 
-    const { data, error } = await supabase.from('users').insert([{ name, phone, password: pass, referral_code: phone, referred_by: ref }]).select();
+    // 1. DUKOREA ACCOUNT MURI SUPABASE AUTH
+    const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: pass,
+    });
 
-    if(error){ alert("Erega iyi numero yamaze gukoreshwa"); return; }
+    if(error){ document.getElementById("regError").innerText = error.message; return; }
+
+    // 2. DUSHYIRA ANDI MAKURU MURI PROFILES TABLE
+    await supabase.from('profiles').insert([{
+        id: data.user.id,
+        email: email,
+        username: name,
+        phone: phone, // DUBIKA NUMERO HANO
+        referral_code: Math.random().toString(36).substring(2,8).toUpperCase(),
+        referred_by: ref,
+        balance: 0
+    }]);
 
     alert("Wiyandikishije neza! Noneho injira");
     showTab('login');
 }
 
 async function login(){
-    const phone = document.getElementById("loginPhone").value;
+    const email = document.getElementById("loginEmail").value; // EMAIL
     const pass = document.getElementById("loginPass").value;
+    document.getElementById("loginError").innerText = "";
 
-    if(!phone ||!pass){ alert("Injiza Numero n'Ijambo ry'ibanga"); return; }
+    if(!email ||!pass){ alert("Injiza Email n'Ijambo ry'ibanga"); return; }
 
-    const { data, error } = await supabase.from('users').select('*').eq('phone', phone).eq('password', pass).single();
+    // DUKORESHEJE SUPABASE AUTH
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: pass,
+    });
 
-    if(error ||!data){ alert("Numero cyangwa Ijambo ry'ibanga si byo"); return; }
+    if(error){ document.getElementById("loginError").innerText = error.message; return; }
 
-    // IKI NICYO GIKOMEYE: TUYOHEREZA MURI DASHBOARD IFITE PHONE
-    window.location.href = `Dashboard.html?phone=${phone}`;
+    // TUYOHEREZA MURI DASHBOARD IFITE USER ID
+    window.location.href = `Dashboard.html?user=${data.user.id}`;
 }
 </script>
 </body>
