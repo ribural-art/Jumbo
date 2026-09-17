@@ -14,11 +14,11 @@ body {background:#000; color:white; font-family:Arial; margin:0; padding:20px;}
 input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; background:#222; color:white;}
 .header{text-align:center; margin-bottom:20px;}
 .footer{text-align:center; font-size:12px; color:#555; margin-top:20px;}
-.rule-box {background:#1a1a1a; border-left:4px solid #00FF00; padding:12px; margin:10px 0; border-radius:5px;}
 .tabs{display:flex; gap:10px; margin-bottom:15px;}
 .tab-btn{flex:1; background:#222; color:white;}
 .tab-btn.active{background:orange; color:#000;}
-.error{color:red; font-size:12px;}
+.error{color:red; font-size:12px; margin:5px 0;}
+.success{color:#00FF00; font-size:12px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -29,9 +29,8 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 <p>WIN BIG. PLAY SMART.</p>
 </div>
 
-<div class="card" id="authCard">
+<div class="card">
 <h2 class="orange">IYANDIKISHE / INJIRA</h2>
-
 <div class="tabs">
 <button class="btn tab-btn active" onclick="showTab('login')">Ninjiye</button>
 <button class="btn tab-btn" onclick="showTab('register')">Iyandikishe</button>
@@ -46,32 +45,19 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 
 <div id="registerForm" style="display:none;">
 <input type="text" id="regName" placeholder="Amazina yawe">
-<input type="email" id="regEmail" placeholder="Email yawe"> <!-- TWAHINDUIYE HANO -->
+<input type="email" id="regEmail" placeholder="Email yawe">
 <input type="password" id="regPass" placeholder="Shiraho Ijambo ry'ibanga">
-<input type="text" id="regPhone" placeholder="Numero ya MTN/Airtel"> <!-- TWAJYE TUZIBIKA NA YO -->
-<input type="text" id="regRef" placeholder="Code yo kwinjizwamo - Ntiyemewe">
+<input type="text" id="regPhone" placeholder="Numero ya MTN/Airtel">
+<input type="text" id="regRef" placeholder="Code yo kwinjizwamo">
 <p id="regError" class="error"></p>
+<p id="regSuccess" class="success"></p>
 <button class="btn btn-green" onclick="register()">IYANDIKISHE</button>
-</div>
-
-<p style="font-size:12px; margin-top:10px;"><a href="admin.html" style="color:gray;">Admin</a></p>
-</div>
-
-<div class="card">
-<h2 class="orange">AMABWIRIZA YA JUMBO ROYALTY</h2>
-<div class="rule-box">
-<p>1. <b>4% buri munsi</b> iminsi 50. Win big, Play smart</p>
-<p>2. <b>Tombola:</b> Buri munsi saa 23:00pm duhemba abantu 5 kuri buri Level</p>
-</div>
-<div class="footer">
-<p>© 2026 JUMBO ROYALTY. +18 Gusa.</p>
 </div>
 </div>
 
 <script>
-// SHYIRAHO IYAWE YA SUPABASE HANO CEO
-const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YOUR-ANON-KEY'
+const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_BtR6Jq4m5sFQtYqbEFz0hQ_STkW3Oto'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 function showTab(tab){
@@ -88,54 +74,31 @@ function showTab(tab){
 }
 
 async function register(){
-    const name = document.getElementById("regName").value;
-    const email = document.getElementById("regEmail").value; // EMAIL
-    const phone = document.getElementById("regPhone").value; // NUMERO
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
     const pass = document.getElementById("regPass").value;
-    const ref = document.getElementById("regRef").value;
+    const ref = document.getElementById("regRef").value.trim();
     document.getElementById("regError").innerText = "";
-
-    if(!name ||!email ||!pass){ alert("Uzuza Amazina, Email na Password"); return; }
-
-    // 1. DUKOREA ACCOUNT MURI SUPABASE AUTH
-    const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: pass,
-    });
-
+    document.getElementById("regSuccess").innerText = "";
+    if(!name ||!email ||!pass){ document.getElementById("regError").innerText = "Uzuza Amazina, Email na Password"; return; }
+    document.getElementById("regError").innerText = "Turimo kubikora...";
+    const { data, error } = await supabase.auth.signUp({ email: email, password: pass });
     if(error){ document.getElementById("regError").innerText = error.message; return; }
-
-    // 2. DUSHYIRA ANDI MAKURU MURI PROFILES TABLE
-    await supabase.from('profiles').insert([{
-        id: data.user.id,
-        email: email,
-        username: name,
-        phone: phone, // DUBIKA NUMERO HANO
-        referral_code: Math.random().toString(36).substring(2,8).toUpperCase(),
-        referred_by: ref,
-        balance: 0
-    }]);
-
-    alert("Wiyandikishije neza! Noneho injira");
+    await supabase.from('profiles').insert([{ id: data.user.id, email: email, username: name, phone: phone, referral_code: Math.random().toString(36).substring(2,8).toUpperCase(), referred_by: ref || null, balance: 0 }]);
+    document.getElementById("regError").innerText = "";
+    document.getElementById("regSuccess").innerText = "Wiyandikishije neza! Injira ubu.";
     showTab('login');
 }
 
 async function login(){
-    const email = document.getElementById("loginEmail").value; // EMAIL
+    const email = document.getElementById("loginEmail").value.trim();
     const pass = document.getElementById("loginPass").value;
     document.getElementById("loginError").innerText = "";
-
-    if(!email ||!pass){ alert("Injiza Email n'Ijambo ry'ibanga"); return; }
-
-    // DUKORESHEJE SUPABASE AUTH
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: pass,
-    });
-
+    if(!email ||!pass){ document.getElementById("loginError").innerText = "Injiza Email n'Ijambo ry'ibanga"; return; }
+    document.getElementById("loginError").innerText = "Turimo kwinjira...";
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email, password: pass });
     if(error){ document.getElementById("loginError").innerText = error.message; return; }
-
-    // TUYOHEREZA MURI DASHBOARD IFITE USER ID
     window.location.href = `Dashboard.html?user=${data.user.id}`;
 }
 </script>
