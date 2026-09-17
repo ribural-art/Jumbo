@@ -9,51 +9,34 @@
         body{background:#0a0a0a; color:#fff;}
        .top-header{background:linear-gradient(90deg, #FFD700, #FFA500); color:#000; padding:15px; text-align:center; border-bottom:4px solid #000; position:sticky; top:0; z-index:100;}
        .top-header h1{font-size:18px; font-weight:900;}
-       .top-header p{font-size:10px; font-weight:bold;}
-       .logo{font-size:25px; margin-bottom:5px;}
        .login-page{display:flex; justify-content:center; align-items:center; min-height:80vh; padding:20px;}
        .login-box{background:#1a1a1a; border:2px solid #FFD700; padding:25px; border-radius:15px; width:100%; max-width:400px;}
-       .login-box h2{color:#FFD700; text-align:center; margin-bottom:20px; font-size:22px;}
-       .login-box input{width:100%; padding:14px; border-radius:8px; border:1px solid #333; background:#222; color:#fff; margin:10px 0; font-size:16px;}
-       .btn{background:#FFD700; color:#000; padding:15px; border:none; border-radius:10px; font-weight:bold; width:100%; cursor:pointer; font-size:18px;}
-       .btn:hover{background:#FFA500;}
+       .login-box h2{color:#FFD700; text-align:center; margin-bottom:20px;}
+       .login-box input{width:100%; padding:14px; border-radius:8px; border:1px solid #333; background:#222; color:#fff; margin:10px 0;}
+       .btn{background:#FFD700; color:#000; padding:15px; border:none; border-radius:10px; font-weight:bold; width:100%; cursor:pointer;}
        .error{color:#FF4444; text-align:center; margin-top:10px; display:none;}
        .admin-page{display:none; padding:10px;}
        .header{background:linear-gradient(90deg, #FFD700, #FFA500); color:#000; padding:15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;}
-       .header h2{font-size:16px;}
-       .logout{background:#FF4444; color:#fff; padding:8px 12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px;}
+       .logout{background:#FF4444; color:#fff; padding:8px 12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;}
        .stats{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:15px 0;}
        .stat-card{background:#1a1a1a; border:1px solid #FFD700; padding:12px; border-radius:10px; text-align:center;}
-       .stat-card h4{color:#aaa; font-size:11px;}
-       .stat-card p{color:#FFD700; font-size:18px; font-weight:bold; margin-top:5px;}
-       .jackpot-card{grid-column:span 2; background:linear-gradient(90deg, #FF00FF, #FFD700); color:#000; border:2px solid #FF00FF;}
-       .jackpot-card h4{color:#000; font-size:12px;}
-       .jackpot-card p{color:#000; font-size:22px;}
-       .tabs{display:flex; gap:8px; margin:15px 0; overflow-x:auto; padding-bottom:5px;}
-       .tab{background:#222; padding:10px 12px; border-radius:8px; cursor:pointer; border:1px solid #333; font-size:11px; white-space:nowrap; flex-shrink:0;}
-       .tab.active{background:#FFD700; color:#000; font-weight:bold; border:1px solid #FFD700;}
+       .stat-card p{color:#FFD700; font-size:18px; font-weight:bold;}
+       .tabs{display:flex; gap:8px; margin:15px 0; overflow-x:auto;}
+       .tab{background:#222; padding:10px 12px; border-radius:8px; cursor:pointer; border:1px solid #333; font-size:11px; white-space:nowrap;}
+       .tab.active{background:#FFD700; color:#000; font-weight:bold;}
        .card{background:#1a1a1a; border-left:4px solid #FFA500; border-radius:10px; padding:12px; margin:10px 0;}
-       .card.withdraw{border-left:4px solid #FF4444;}
-       .card.deposit{border-left:4px solid #00FF00;}
-       .card.tombola{border-left:4px solid #FF00FF; background:#1a001a;}
-       .info p{margin:4px 0; font-size:12px;}
-       .info b{color:#FFD700;}
-       .btn-approve{background:#00FF00; color:#000; padding:10px; border:none; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; font-size:13px; margin-top:8px;}
+       .btn-approve{background:#00FF00; color:#000; padding:10px; border:none; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; margin-top:8px;}
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="top-header">
-        <div class="logo">👑</div>
-        <h1>JUMBO ROYALTY ADMIN PANEL</h1>
-        <p>SYSTEM YA TOMBOLA & INVESTMENT - RWANDA</p>
-    </div>
+    <div class="top-header"><h1>👑 JUMBO ROYALTY ADMIN PANEL 👑</h1></div>
 
     <div class="login-page" id="loginPage">
         <div class="login-box">
             <h2>👑 ADMIN LOGIN</h2>
-            <input type="email" id="email" placeholder="Andika Email yawe ya Supabase">
-            <input type="password" id="password" placeholder="Andika Password">
+            <input type="email" id="email" placeholder="Email yawe">
+            <input type="password" id="password" placeholder="Password">
             <button class="btn" onclick="login()">INJIRA</button>
             <p class="error" id="error">Email cyangwa Password si byo!</p>
         </div>
@@ -61,36 +44,26 @@
 
     <div class="admin-page" id="adminPage">
         <div class="header"><h2>👑 ROYALTY ADMIN PRO</h2><button class="logout" onclick="logout()">SOHOKA</button></div>
-
         <div class="stats">
-            <div class="stat-card"><h4>Abakoresha Bose</h4><p id="totalUsers">0</p></div>
+            <div class="stat-card"><h4>Abakoresha</h4><p id="totalUsers">0</p></div>
             <div class="stat-card"><h4>Deposit Zose</h4><p id="totalDeposit">0 Frw</p></div>
-            <div class="stat-card"><h4>Withdraw Zose</h4><p id="totalWithdraw">0 Frw</p></div>
-            <div class="stat-card"><h4>Daily Income</h4><p id="dailyIncome">0 Frw</p></div>
-            <div class="stat-card jackpot-card"><h4>👑 JACKPOT YA TOMBOLA</h4><p id="jackpot">0 Frw</p></div>
+            <div class="stat-card" style="grid-column:span 2; background:linear-gradient(90deg, #FF00FF, #FFD700); color:#000;"><h4>👑 JACKPOT</h4><p id="jackpot" style="color:#000;">0 Frw</p></div>
         </div>
-
         <div class="tabs">
             <div class="tab active" onclick="showTab('deposit', this)">Deposits</div>
-            <div class="tab" onclick="showTab('tombola', this)">TOMBOLA 👑</div>
+            <div class="tab" onclick="showTab('tombola', this)">TOMBOLA</div>
             <div class="tab" onclick="showTab('users', this)">Abakoresha</div>
         </div>
-
         <div id="depositTab"></div>
         <div id="tombolaTab" style="display:none;"></div>
         <div id="usersTab" style="display:none;"></div>
     </div>
 
 <script>
+// KEYS ZIKOSOYE NEZA
 const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8'
+const SUPABASE_KEY = 'sb_publishable_BtR6Jq4m5sFQtYqbEFz0hQ_STkW3Oto'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-
-const CONFIG = {
-    1: {price: 300, targetFrw: 100000, prize: 10000},
-    2: {price: 500, targetFrw: 150000, prize: 15000},
-    3: {price: 1000, targetFrw: 200000, prize: 20000}
-};
 
 checkLogin();
 
@@ -100,6 +73,7 @@ async function login(){
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if(error){
         document.getElementById('error').style.display = 'block';
+        document.getElementById('error').innerText = error.message;
     } else {
         document.getElementById('error').style.display = 'none';
         showAdmin();
@@ -112,7 +86,7 @@ function showLogin(){ document.getElementById('loginPage').style.display = 'flex
 function showAdmin(){ document.getElementById('loginPage').style.display = 'none'; document.getElementById('adminPage').style.display = 'block'; }
 
 async function checkLogin(){
-    const { data: { user } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if(user){ showAdmin(); loadAdminData(); } else { showLogin(); }
 }
 
@@ -121,34 +95,28 @@ function showTab(tab, el){
     document.getElementById(tab+'Tab').style.display = 'block';
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    if(tab === 'users'){ loadUsers(); }
-    if(tab === 'tombola'){ loadTombolaData(); }
-    if(tab === 'deposit'){ loadDeposits(); }
+    if(tab === 'users') loadUsers();
+    if(tab === 'tombola') loadTombolaData();
+    if(tab === 'deposit') loadDeposits();
 }
 
 async function loadAdminData(){
     const { data: users } = await supabase.from('profiles').select('*')
     const { data: deposits } = await supabase.from('deposits').select('*')
-    const { data: tickets } = await supabase.from('tombola_tickets').select('*')
-    
-    let totalBalance = users.reduce((sum,u)=>sum+Number(u.balance),0)
+    if(!users || !deposits) return;
     let totalDeposit = deposits.filter(d=>d.status=='approved').reduce((sum,d)=>sum+Number(d.amount),0)
-    let totalJackpot = tickets.reduce((sum,t)=>sum+Number(t.price),0)
-
     document.getElementById('totalUsers').innerText = users.length
     document.getElementById('totalDeposit').innerText = totalDeposit.toLocaleString() + ' Frw'
-    document.getElementById('jackpot').innerText = totalJackpot.toLocaleString() + ' Frw'
+    document.getElementById('jackpot').innerText = totalDeposit.toLocaleString() + ' Frw'
 }
 
 async function loadDeposits(){
     const { data } = await supabase.from('deposits').select('*').eq('status','pending').order('created_at', {ascending: false})
+    if(!data) return;
     let html = data.length == 0 ? '<p style="text-align:center;">Nta deposit ihari</p>' : data.map(d=>`
-        <div class="card deposit">
-            <div class="info">
-                <p><b>Izina:</b> ${d.phone} | <b>Tel:</b> ${d.phone}</p>
-                <p><b>Transaction ID:</b> ${d.tef}</p>
-                <p><b>Amafaranga:</b> ${d.amount.toLocaleString()} Frw</p>
-            </div>
+        <div class="card">
+            <p><b>Tel:</b> ${d.phone || d.user_id}</p>
+            <p><b>Amount:</b> ${Number(d.amount).toLocaleString()} Frw</p>
             <button class="btn-approve" onclick="approveDeposit(${d.id}, ${d.amount}, '${d.user_id}')">EMEZA</button>
         </div>`).join('')
     document.getElementById('depositTab').innerHTML = html
@@ -156,6 +124,7 @@ async function loadDeposits(){
 
 async function approveDeposit(id, amount, userId){
     const { data: user } = await supabase.from('profiles').select('balance').eq('id', userId).single()
+    if(!user) return alert("User not found");
     let newBalance = Number(user.balance) + Number(amount)
     await supabase.from('profiles').update({balance: newBalance}).eq('id', userId)
     await supabase.from('deposits').update({status:'approved'}).eq('id',id)
@@ -163,25 +132,11 @@ async function approveDeposit(id, amount, userId){
 }
 
 async function loadTombolaData(){
-    let html = '';
-    for(let i=1; i<=3; i++){
-        const { data: tickets } = await supabase.from('tombola_tickets').select('*').eq('level', i)
-        let total = tickets.reduce((sum,t)=>sum+t.price,0)
-        let users = [...new Set(tickets.map(t=>t.user_id))].length
-        let missing = CONFIG[i].targetFrw - total; if(missing<0) missing=0;
-        html += `<div class="card tombola">
-            <div class="info"><p><b>LEVEL ${i}</b> - Ticket: ${CONFIG[i].price} Frw</p>
-            <p><b>Target:</b> ${CONFIG[i].targetFrw.toLocaleString()} Frw | <b>Abaguzi:</b> ${users}</p>
-            <p><b>Jackpot Yinjiye:</b> ${total.toLocaleString()} Frw</p>
-            <p><b>Ibura:</b> ${missing.toLocaleString()} Frw</p></div>
-        </div>`;
-    }
-    document.getElementById('tombolaTab').innerHTML = html
+    document.getElementById('tombolaTab').innerHTML = '<p>Tombola data loading...</p>'
 }
-
 async function loadUsers(){
     const { data: users } = await supabase.from('profiles').select('*')
-    let html = users.map((u,i)=>`<div class="card"><div class="info"><p><b>#${i+1} Email:</b> ${u.email}</p><p><b>Balance:</b> ${u.balance.toLocaleString()} Frw</p></div></div>`).join('')
+    let html = users.map((u,i)=>`<div class="card"><p><b>#${i+1} ${u.email}</b> - ${Number(u.balance).toLocaleString()} Frw</p></div>`).join('')
     document.getElementById('usersTab').innerHTML = html || '<p>Nta mukoresha</p>'
 }
 </script>
