@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUMBO ROYALTY - Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#0a0a0a;color:#fff;}
+.navbar{background:#111;padding:15px 20px;border-bottom:2px solid #FFD700;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.logo{color:#FFD700;font-weight:bold;font-size:18px;}
+.links a{color:#fff;text-decoration:none;margin:0 10px;font-size:13px;} .links a:hover{color:#FFD700;}
+.logout{color:#ff4444;cursor:pointer;font-size:13px;}
+.header{background:linear-gradient(90deg,#FFD700,#FFA500);padding:18px;color:#000;font-weight:bold;font-size:18px;text-align:center;}
+.container{padding:20px;max-width:1200px;margin:auto;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:15px;}
+.card{background:#1a1a1a;border:1px solid #FFD700;border-radius:15px;padding:20px;box-shadow:0 0 15px rgba(255,215,0,0.15);}
+.card h3{color:#FFD700;margin-bottom:10px;}
+.balance{font-size:30px;font-weight:bold;color:#00FF00;}
+.locked{color:#ff8888;font-size:13px;} .ok{color:#00FF00;font-size:13px;}
+.btn{background:#FFD700;color:#000;padding:12px 20px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;}
+.btn2{background:#333;color:#FFD700;padding:12px 20px;border:1px solid #FFD700;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;}
+.btn-small{width:auto;padding:6px 12px;font-size:11px;margin:3px;}
+input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;background:#222;color:#fff;}
+.ref-box{background:#222;padding:10px;border-radius:8px;margin-top:10px;font-size:11px;word-break:break-all;border:1px dashed #FFD700;}
+.history-item{border-bottom:1px solid #333;padding:8px 0;display:flex;justify-content:space-between;font-size:12px;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="navbar">
+<div class="logo">👑 JUMBO ROYALTY</div>
+<div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="investment.html">Investment</a>
+<a href="tombola.html">Tombola</a>
+<a href="deposit.html">Deposit</a>
+</div>
+<div class="logout" onclick="logout()">Sohoka</div>
+</div>
 
+<div class="header">Welcome <span id="username">CEO</span> 👑</div>
+
+<div class="container">
+<div class="cards">
+
+<div class="card">
+<h3>💰 Amafaranga Yanjye (Wallet)</h3>
+<p class="balance" id="balance">0 Frw</p>
+<p class="ok" id="investmentStatus">✅ Investment: Nta Active</p>
+<p style="font-size:11px;color:#aaa;">Deposit ya mbere 10k+ = Bonus 1000frw</p>
+<button class="btn" onclick="location.href='investment.html'">Tangira Investment</button>
+</div>
+
+<div class="card">
+<h3>📤 Kohereza Deposit</h3>
+<p style="font-size:11px;">*182*8*1*2169779# Rachel</p>
+<select id="method"><option>Hitamo Uburyo</option><option>MTN MoMo</option><option>Airtel Money</option></select>
+<input type="number" id="amount" placeholder="Amafaranga wabitse">
+<input type="text" id="tef" placeholder="Transaction ID">
+<button class="btn2" onclick="sendDeposit()">Ohereza Deposit</button>
+<p class="ok" style="margin-top:8px;">Admin azemeza muminota 5</p>
+</div>
+
+<div class="card">
+<h3>🎁 Welcome Bonus</h3>
+<p>Status: <span class="ok">1000frw Iraboneka</span></p>
+<button class="btn" onclick="claimBonus()">Kubikuza 1000frw</button>
+</div>
+
+<div class="card">
+<h3>👥 Referral Bonus</h3>
+<p>Lev1: <b style="color:#00FF00;">10%</b> | Lev2: 2% | Lev3: 1%</p>
+<p class="locked">Amafaranga: <span id="refBalance">0 Frw</span></p>
+<p style="font-size:12px;margin-top:10px;">Link yawe:</p>
+<div class="ref-box" id="refLink">Loading...</div>
+<button class="btn2" onclick="copyRef()">Koporora Link</button>
+</div>
+
+<div class="card">
+<h3>🏦 Kubikuza (Withdrawal)</h3>
+<p style="font-size:12px;">Min: 1000 Frw | Cut: 8%</p>
+<input type="number" id="withdrawAmount" placeholder="Andika Amafaranga" oninput="calcFee()">
+<p class="locked">Uzabona: <span id="receiveAmount">0</span> Frw | Katwa: <span id="feeAmount">0</span> Frw</p>
+<button class="btn" onclick="requestWithdraw()">Saba Kubikuza</button>
+</div>
+
+<div class="card" style="grid-column:1 / -1;">
+<h3>📜 History Yanjye</h3>
+<div style="margin:10px 0;">
+<button class="btn2 btn-small" onclick="loadHistory('deposits')">Deposits</button>
+<button class="btn2 btn-small" onclick="loadHistory('withdraws')">Withdraws</button>
+<button class="btn2 btn-small" onclick="loadHistory('tickets')">Tombola</button>
+<button class="btn2 btn-small" onclick="loadHistory('investments')">Investments</button>
+</div>
+<div id="historyBox" style="background:#222;padding:12px;border-radius:8px;max-height:220px;overflow:auto;">
+<p style="color:#666;font-size:12px;">Kanda kuri button hejuru urebe history...</p>
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
+
+function checkLogin(){
+ if(!currentUser||!currentUser.phone){ location.href='index.html'; return; }
+ document.getElementById('username').innerText=currentUser.names;
+ loadUserData(); generateRefLink(currentUser.phone);
+}
+async function loadUserData(){
+ try{
+  const {data}=await supabaseClient.from('users').select('*').eq('phone',currentUser.phone).single();
+  if(data){
+   document.getElementById('balance').innerText=(data.balance||0).toLocaleString()+' Frw';
+   document.getElementById('refBalance').innerText=(data.referral_balance||0).toLocaleString()+' Frw';
+   if(data.investment_status) document.getElementById('investmentStatus').innerText='✅ '+data.investment_status;
+  }
+ }catch(e){}
+}
+async function sendDeposit(){
+ let a=document.getElementById('amount').value,m=document.getElementById('method').value,t=document.getElementById('tef').value;
+ if(!a||!t||m=='Hitamo Uburyo') return alert('Uzuza byose!');
+ const {error}=await supabaseClient.from('deposits').insert([{phone:currentUser.phone,names:currentUser.names,amount:parseInt(a),method:m,tef:t,status:'pending'}]);
+ if(error) alert(error.message); else alert('Deposit yoherejwe! Tegereza Admin.');
+}
+function generateRefLink(phone){ 
+  let baseUrl = 'https://jumbo-omega.vercel.app';
+  document.getElementById('refLink').innerText = `${baseUrl}/?ref=${phone}`;
+}
+function copyRef(){ navigator.clipboard.writeText(document.getElementById('refLink').innerText); alert('Link ikoporowe!'); }
+function calcFee(){ let amt=parseInt(document.getElementById('withdrawAmount').value||0); let fee=Math.floor(amt*0.08); document.getElementById('feeAmount').innerText=fee; document.getElementById('receiveAmount').innerText=amt-fee; }
+function claimBonus(){ alert('Bonus ya 1000frw - izaboneka nyuma ya deposit ya mbere 10k+'); }
+async function requestWithdraw(){ let amt=document.getElementById('withdrawAmount').value; if(!amt) return alert('Andika amafaranga!'); const {error}=await supabaseClient.from('withdraws').insert([{phone:currentUser.phone,amount:parseInt(amt),status:'pending'}]); if(error) alert(error.message); else alert('Gusaba kubikuza byoherejwe!'); }
+async function loadHistory(type){
+ let box=document.getElementById('historyBox'); box.innerHTML='Loading...';
+ try{
+  const {data}=await supabaseClient.from(type).select('*').eq('phone',currentUser.phone).order('created_at',{ascending:false}).limit(20);
+  if(!data||data.length==0){ box.innerHTML=`<p style='color:#666;'>Nta ${type} iraboneka</p>`; return; }
+  let html=''; data.forEach(d=>{ html+=`<div class="history-item"><span>${type}: ${d.amount||''} ${d.type||''} - <b>${d.status||'pending'}</b></span><span style="color:#888;">${new Date(d.created_at).toLocaleDateString()}</span></div>`; });
+  box.innerHTML=html;
+ }catch(e){ box.innerHTML='Error: '+e.message; }
+}
+function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.html'; }
+checkLogin();
+</script>
+</body>
+</html>
