@@ -3,24 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JUMBO ROYALTY - INJIRA</title>
+<title>JUMBO ROYALTY</title>
 <style>
 body {background:#000; color:white; font-family:Arial; margin:0; padding:20px;}
-.orange{color:orange;}.green{color:#00FF00;}
-.btn{background:orange; color:#000; padding:12px; border:none; border-radius:8px; width:100%; margin:5px 0; font-weight:bold; cursor:pointer; font-size:15px; text-align:center; text-decoration:none; display:block;}
-.btn:hover{background:#ffaa00;}
+.orange{color:orange;} .green{color:#00FF00;}
+.btn{background:orange; color:#000; padding:12px; border:none; border-radius:8px; width:100%; margin:5px 0; font-weight:bold; cursor:pointer; font-size:15px; text-align:center; display:block; text-decoration:none;}
 .btn-green{background:#00FF00; color:#000;}
-.card{background:#111; border:2px solid orange; padding:20px; border-radius:10px; margin-bottom:20px;}
-input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; background:#222; color:white;}
+.btn-red{background:#dc2626; color:#fff;}
+.card{background:#111; border:2px solid #333; padding:20px; border-radius:10px; margin-bottom:20px;}
+.card-orange{border-color:orange;}
+.jackpot{border:2px solid #00FF00; background:#001100; padding:15px; text-align:center; border-radius:10px;}
+input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; background:#222; color:white;}
+.plan {background:#222; padding:12px; border-radius:8px; margin:8px 0; border-left:4px solid orange;}
+.note{background:#222; padding:10px; border-radius:5px; font-size:14px; margin-top:10px; border-left:3px solid #00FF00;}
+.rule-box {background:#0f1a0f; border-left:4px solid #00FF00; padding:12px; margin:10px 0; border-radius:5px; font-size:14px; line-height:1.7;}
 .header{text-align:center; margin-bottom:20px;}
-.footer{text-align:center; font-size:12px; color:#555; margin-top:20px;}
-.tabs{display:flex; gap:10px; margin-bottom:15px;}
-.tab-btn{flex:1; background:#222; color:white;}
-.tab-btn.active{background:orange; color:#000;}
-.error{color:red; font-size:12px; margin:5px 0;}
-.success{color:#00FF00; font-size:12px;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -29,78 +27,82 @@ input{padding:10px; width:90%; margin:5px 0; border-radius:5px; border:none; bac
 <p>WIN BIG. PLAY SMART.</p>
 </div>
 
+<!-- 1. UKO BUSINESS IKORA -->
+<div class="card card-orange">
+<h2 class="orange">💼 UKO BUSINESS IKORA</h2>
+<p style="font-size:14px; line-height:1.6;">
+✅ <b>Investment:</b> Ushora 10k-50k, uhabwa 4% buri munsi iminsi 50.<br>
+✅ <b>Tombola:</b> Ugura ticket 300/500/1000, buri munsi saa 23:00 duhemba abantu 5 kuri buri LEV.<br>
+✅ <b>Ads:</b> Soma amabwiriza ari muri group iminota 2, uhembwa <b class="green">70frw</b> muri wallet.
+</p>
+</div>
+
+<!-- 2. TOMBOLA + AMABWIRIZA YAWE NYINE -->
 <div class="card">
-<h2 class="orange">IYANDIKISHE / INJIRA</h2>
-<div class="tabs">
-<button class="btn tab-btn active" onclick="showTab('login')">Ninjiye</button>
-<button class="btn tab-btn" onclick="showTab('register')">Iyandikishe</button>
+<h2 class="orange">🎟️ TOMBOLA JUMBO</h2>
+<div class="jackpot">
+<h3>JACKPOT: <span class="green">5,000,000frw</span></h3>
+<p style="color:#00FF00; font-weight:bold; font-size:16px;">⏰ Buri munsi saa 23:00pm DUHEMBA</p>
+</div>
+<div class="rule-box">
+<h4 style="color:#00FF00; margin:0;">📢 AMABWIRIZA AKOMEYE</h4>
+<p>1. <b>Buri munsi saa 23:00</b> duhemba <b>ABANTU 5</b> kuri buri <b>LEV</b></p>
+<p>2. <b>Niyo Jackpot itaruzura</b> icyuma gikomeza kubara kugeza yuzuye</p>
+<p>3. <b>Ku cyumweru:</b> Abantu babitsa gusa. Ntahembo riba</p>
+</div>
+<p><b>LEV1:</b> 300frw → win 10,000frw</p>
+<p><b>LEV2:</b> 500frw → win 15,000frw</p>
+<p><b>LEV3:</b> 1000frw → win 30,000frw</p>
 </div>
 
-<div id="loginForm">
-<input type="email" id="loginEmail" placeholder="Email yawe">
-<input type="password" id="loginPass" placeholder="Ijambo ry'ibanga">
-<p id="loginError" class="error"></p>
-<button class="btn btn-green" onclick="login()">INJIRA</button>
+<!-- 3. INVESTMENT -->
+<div class="card">
+<h2 class="orange">INVESTMENT PLANS</h2>
+<div class="plan"><b>J1:</b> 10,000frw = 400frw/buri munsi = 20,000frw</div>
+<div class="plan"><b>J2:</b> 20,000frw = 800frw/buri munsi = 40,000frw</div>
+<div class="plan"><b>J3:</b> 30,000frw = 1,200frw/buri munsi = 60,000frw</div>
+<div class="plan"><b>J4:</b> 40,000frw = 1,600frw/buri munsi = 80,000frw</div>
+<div class="plan"><b>J5:</b> 50,000frw = 2,000frw/buri munsi = 100,000frw</div>
 </div>
 
-<div id="registerForm" style="display:none;">
-<input type="text" id="regName" placeholder="Amazina yawe">
-<input type="email" id="regEmail" placeholder="Email yawe">
-<input type="password" id="regPass" placeholder="Shiraho Ijambo ry'ibanga">
-<input type="text" id="regPhone" placeholder="Numero ya MTN/Airtel">
-<input type="text" id="regRef" placeholder="Code yo kwinjizwamo">
-<p id="regError" class="error"></p>
-<p id="regSuccess" class="success"></p>
-<button class="btn btn-green" onclick="register()">IYANDIKISHE</button>
+<!-- 4. ADS + GROUPS -->
+<div class="card">
+<h2 class="orange">📢 AKAZI KA ADS + JOIN US</h2>
+<div style="background:#001100; border:1px dashed #00FF00; padding:12px; border-radius:8px; text-align:center;">
+<p><b class="green">Soma amabwiriza ari muri group iminota 2 uhembwe 70frw</b></p>
+<p style="font-size:13px;">Injira muri group usome amabwiriza, timer irabara, uhabwe 70frw muri dashboard</p>
 </div>
+<a href="https://wa.me/" class="btn btn-green" style="margin-top:12px;">JOIN WHATSAPP GROUP</a>
+<a href="https://t.me/" class="btn">JOIN TELEGRAM GROUP</a>
+<div class="note">Kwishyura: <b>*182*8*1*2169779#</b> - Rachel</div>
+</div>
+
+<!-- 5. REGISTER IRI HANO HASI MURI INDEX NYINE -->
+<div class="card card-orange" id="register">
+<h2 class="orange">📝 IYANDIKISHE UJYE MURI DASHBOARD</h2>
+<p style="font-size:13px; color:#aaa;">Nyuma yo gusoma amabwiriza hejuru, iyandikishe hano ujye muri dashboard yawe</p>
+<input type="text" id="names" placeholder="Amazina yawe yuzuye">
+<input type="tel" id="phone" placeholder="Numero ya MTN/Airtel">
+<button class="btn btn-green" onclick="register()">INJIRA MURI DASHBOARD →</button>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://grbltjhhjnvuiezhspau.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_BtR6Jq4m5sFQtYqbEFz0hQ_STkW3Oto'
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-function showTab(tab){
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    if(tab=='login'){
-        document.getElementById('loginForm').style.display='block';
-        document.getElementById('registerForm').style.display='none';
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-    } else {
-        document.getElementById('loginForm').style.display='none';
-        document.getElementById('registerForm').style.display='block';
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    }
-}
-
-async function register(){
-    const name = document.getElementById("regName").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
-    const phone = document.getElementById("regPhone").value.trim();
-    const pass = document.getElementById("regPass").value;
-    const ref = document.getElementById("regRef").value.trim();
-    document.getElementById("regError").innerText = "";
-    document.getElementById("regSuccess").innerText = "";
-    if(!name ||!email ||!pass){ document.getElementById("regError").innerText = "Uzuza Amazina, Email na Password"; return; }
-    document.getElementById("regError").innerText = "Turimo kubikora...";
-    const { data, error } = await supabase.auth.signUp({ email: email, password: pass });
-    if(error){ document.getElementById("regError").innerText = error.message; return; }
-    await supabase.from('profiles').insert([{ id: data.user.id, email: email, username: name, phone: phone, referral_code: Math.random().toString(36).substring(2,8).toUpperCase(), referred_by: ref || null, balance: 0 }]);
-    document.getElementById("regError").innerText = "";
-    document.getElementById("regSuccess").innerText = "Wiyandikishije neza! Injira ubu.";
-    showTab('login');
-}
-
-async function login(){
-    const email = document.getElementById("loginEmail").value.trim();
-    const pass = document.getElementById("loginPass").value;
-    document.getElementById("loginError").innerText = "";
-    if(!email ||!pass){ document.getElementById("loginError").innerText = "Injiza Email n'Ijambo ry'ibanga"; return; }
-    document.getElementById("loginError").innerText = "Turimo kwinjira...";
-    const { data, error } = await supabase.auth.signInWithPassword({ email: email, password: pass });
-    if(error){ document.getElementById("loginError").innerText = error.message; return; }
-    window.location.href = `Dashboard.html?user=${data.user.id}`;
+function register(){
+ let n=document.getElementById('names').value.trim();
+ let p=document.getElementById('phone').value.trim();
+ if(!n || !p){ alert("Uzuza amazina na numero!"); return; }
+ localStorage.setItem('jumbo_user', JSON.stringify({names:n, phone:p}));
+ // Supabase save
+ try{
+  fetch("https://grbltjhhjnvuiezhspau.supabase.co/rest/v1/users", {
+   method:"POST",
+   headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8","Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},
+   body: JSON.stringify({phone:p, names:n})
+  });
+ }catch(e){}
+ location.href="dashboard.html";
 }
 </script>
+
 </body>
-    </html>
+</html>
