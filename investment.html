@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUMBO ROYALTY - Investment Plans</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#0a0a0a;color:#fff;}
+.header{background:linear-gradient(90deg,#FFD700,#FFA500);padding:20px;color:#000;font-weight:bold;font-size:20px;display:flex;justify-content:space-between;}
+.header a{color:#000;text-decoration:none;}
+.container{padding:20px;max-width:1200px;margin:auto;}
+.title{text-align:center;color:#FFD700;font-size:24px;margin:20px 0;}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+.plan{background:#1a1a1a;border:2px solid #FFD700;border-radius:15px;padding:20px;text-align:center;transition:0.3s;position:relative;cursor:pointer;}
+.plan:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(255,215,0,0.4);}
+.plan h3{color:#FFD700;font-size:22px;}
+.price{font-size:32px;color:#00FF00;font-weight:bold;margin:10px 0;}
+.percent{color:#FFD700;font-size:16px;font-weight:bold;}
+.daily{color:#00FF00;font-size:18px;margin:10px 0;}
+.profit{color:#aaa;font-size:14px;}
+.btn{background:#FFD700;color:#000;padding:12px 20px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;}
+.btn:hover{background:#FFA500;}
+.badge{background:#FF4444;color:#fff;padding:5px 10px;border-radius:20px;font-size:12px;position:absolute;top:10px;right:10px;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="header">
+<a href="dashboard.html">⬅ Gusubira Inyuma</a>
+👑 Hitamo Investment
+</div>
 
+<div class="container">
+<h2 class="title">💎 AMA PLANS YA JUMBO ROYALTY</h2>
+<p style="text-align:center;color:#aaa;margin-bottom:20px;">Inyungu: 4% Ku munsi | Igihe: Iminsi 50 | Umaze gukora Investment uhabwa 1000frw Bonus</p>
+
+<div class="plans">
+<div class="plan" onclick="buyPlan('STARTER',10000)">
+<h3>STARTER</h3>
+<p class="price">10,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 400 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 20,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('ROYAL',20000)">
+<span class="badge">ZIMENYEREWE</span>
+<h3>ROYAL</h3>
+<p class="price">20,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 800 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 40,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('PRINCE',30000)">
+<h3>PRINCE</h3>
+<p class="price">30,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 1,200 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 60,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('DUKE',40000)">
+<span class="badge">POPULAR</span>
+<h3>DUKE</h3>
+<p class="price">40,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 1,600 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 80,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('KING',50000)">
+<span class="badge">VIP</span>
+<h3>KING</h3>
+<p class="price">50,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 2,000 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 100,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('EMPEROR',60000)">
+<span class="badge">HOT</span>
+<h3>EMPEROR</h3>
+<p class="price">60,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 2,400 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 120,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('LEGEND',70000)">
+<h3>LEGEND</h3>
+<p class="price">70,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 2,800 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 140,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('DIAMOND',80000)">
+<span class="badge">DIAMOND</span>
+<h3>DIAMOND</h3>
+<p class="price">80,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 3,200 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 160,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('PLATINUM',90000)">
+<h3>PLATINUM</h3>
+<p class="price">90,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 3,600 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 180,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+
+<div class="plan" onclick="buyPlan('GOD',100000)">
+<span class="badge">👑 GOD</span>
+<h3>GOD</h3>
+<p class="price">100,000 Frw</p>
+<p class="percent">4% / Umunsi</p>
+<p class="daily">+ 4,000 Frw / Umunsi</p>
+<p class="profit">Igihe: Iminsi 50 | Total: 200,000 Frw</p>
+<button class="btn">Gura Iyi Plan</button>
+</div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
+if(!currentUser) location.href='index.html';
+
+async function buyPlan(name, price){
+ if(!confirm(`Uremeza kugura ${name} - ${price.toLocaleString()} Frw?\n\n4% buri munsi = ${(price*0.04).toLocaleString()} Frw`)) return;
+ try{
+  const {data:userData}=await supabaseClient.from('users').select('*').eq('phone',currentUser.phone).single();
+  if(!userData) return alert('User not found');
+  if(userData.balance < price) return alert(`Amafaranga ntabwo ahagije!\nWallet: ${userData.balance} Frw\nUkenera: ${price} Frw`);
+
+  let daily = price * 0.04;
+  let totalProfit = price * 2;
+
+  // 1. Gabanya balance
+  await supabaseClient.from('users').update({
+   balance: userData.balance - price,
+   investment_status: `${name} Active - ${daily} Frw/day`
+  }).eq('phone',currentUser.phone);
+
+  // 2. Shyira muri investments
+  await supabaseClient.from('investments').insert([{
+   phone: currentUser.phone,
+   names: currentUser.names,
+   plan: name,
+   amount: price,
+   daily_profit: daily,
+   status: 'active',
+   start_date: new Date().toISOString()
+  }]);
+
+  alert(`✅ ${name} Yaguwe neza!\n\nUzajya ubona ${daily} Frw buri munsi mu minsi 50!\n\nBonus ya 1000Frw yongewe!`);
+  location.href='dashboard.html';
+
+ }catch(e){
+  alert('Error: '+e.message);
+ }
+}
+</script>
+</body>
+</html>
