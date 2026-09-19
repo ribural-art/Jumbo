@@ -1,1 +1,168 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUMBO ROYALTY - TOMBOLA PRO</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#000;color:#fff;padding:15px;}
+.header{text-align:center;padding:20px;background:linear-gradient(90deg,#FFD700,#FFA500);color:#000;border-radius:15px;margin-bottom:15px;}
+.countdown{background:#1a1a1a;border:2px solid #FFD700;padding:15px;border-radius:12px;text-align:center;margin-bottom:20px;}
+.countdown p{color:#FF0000;font-size:28px;font-weight:bold;}
+.level{background:#0a0a0a;border:2px solid #FFD700;border-radius:15px;padding:18px;margin:15px 0;}
+.level h2{color:#FFD700;text-align:center;margin-bottom:10px;}
+.prize{color:#00FF00;font-size:20px;font-weight:bold;text-align:center;}
+.info{display:flex;justify-content:space-between;margin:8px 0;font-size:13px;}
+.info.missing{color:#FF4444;font-weight:bold;}
+.info.myMoney{color:#00FF00;font-weight:bold;}
+.progress{background:#222;border-radius:10px;height:22px;margin:10px 0;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,#00FF00,#00AA00);text-align:center;color:#000;font-weight:bold;line-height:22px;transition:0.5s;}
+.btn-buy{background:#00FF00;color:#000;padding:14px;border:none;border-radius:10px;font-weight:bold;width:100%;font-size:16px;cursor:pointer;}
+.note{color:#FFA500;font-size:11px;text-align:center;margin-top:8px;}
+.navbar{background:#111;padding:12px 20px;border-bottom:2px solid #FFD700;display:flex;justify-content:space-between;margin:-15px -15px 15px -15px;}
+.navbar a{color:#fff;text-decoration:none;margin:0 8px;font-size:12px;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
+<div class="navbar">
+<div style="color:#FFD700;font-weight:bold;">👑 JUMBO</div>
+<div><a href="dashboard.html">Dashboard</a><a href="investment.html">Investment</a><a href="tombola.html" style="color:#FFD700;">Tombola</a></div>
+</div>
+
+<div class="header">
+<h1>🎰 JUMBO TOMBOLA PRO 🎰</h1>
+<p>Buri Lev Ihemba ukwayo | Saa 23:00pm</p>
+</div>
+
+<div class="countdown">
+<h3 style="color:#FFD700;">⏰ IGIHE GISIGAYE</h3>
+<p id="timer">23:59:59</p>
+</div>
+
+<!-- LEV 1 -->
+<div class="level">
+<h2>🏆 LEV 1</h2>
+<p class="prize">300 Frw → Utsindira 10,000 Frw</p>
+<div class="info"><span>Target:</span> <b id="lev1TargetPoints">334 Amanota</b></div>
+<div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev1MyMoney">0 Frw</b></div>
+<div class="info missing"><span>Ibura:</span> <b id="lev1Missing">334 Amanota</b></div>
+<div class="info"><span>Abaguzi Bose:</span> <b id="lev1Users">0</b></div>
+<div class="progress"><div class="progress-bar" id="lev1Bar">0%</div></div>
+<button class="btn-buy" onclick="buyTicket(1)">GURA TICKET - 300 Frw</button>
+<p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p>
+<div id="lev1Winners" style="display:none;margin-top:10px;"></div>
+</div>
+
+<!-- LEV 2 -->
+<div class="level">
+<h2>👑 LEV 2</h2>
+<p class="prize">500 Frw → Utsindira 15,000 Frw</p>
+<div class="info"><span>Target:</span> <b id="lev2TargetPoints">300 Amanota</b></div>
+<div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev2MyMoney">0 Frw</b></div>
+<div class="info missing"><span>Ibura:</span> <b id="lev2Missing">300 Amanota</b></div>
+<div class="info"><span>Abaguzi Bose:</span> <b id="lev2Users">0</b></div>
+<div class="progress"><div class="progress-bar" id="lev2Bar">0%</div></div>
+<button class="btn-buy" onclick="buyTicket(2)">GURA TICKET - 500 Frw</button>
+<p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p>
+<div id="lev2Winners" style="display:none;margin-top:10px;"></div>
+</div>
+
+<!-- LEV 3 -->
+<div class="level">
+<h2>💎 LEV 3</h2>
+<p class="prize">1000 Frw → Utsindira 20,000 Frw</p>
+<div class="info"><span>Target:</span> <b id="lev3TargetPoints">200 Amanota</b></div>
+<div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev3MyMoney">0 Frw</b></div>
+<div class="info missing"><span>Ibura:</span> <b id="lev3Missing">200 Amanota</b></div>
+<div class="info"><span>Abaguzi Bose:</span> <b id="lev3Users">0</b></div>
+<div class="progress"><div class="progress-bar" id="lev3Bar">0%</div></div>
+<button class="btn-buy" onclick="buyTicket(3)">GURA TICKET - 1000 Frw</button>
+<p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p>
+<div id="lev3Winners" style="display:none;margin-top:10px;"></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
+if(!currentUser) location.href='index.html';
+
+const CONFIG={
+ lev1:{price:300,targetPoints:334,prize:10000},
+ lev2:{price:500,targetPoints:300,prize:15000},
+ lev3:{price:1000,targetPoints:200,prize:20000}
+};
+
+let tombolaData=JSON.parse(localStorage.getItem('tombolaData'))||{lev1:{total:0,users:[],mySpent:0},lev2:{total:0,users:[],mySpent:0},lev3:{total:0,users:[],mySpent:0}};
+
+updateUI(); setInterval(updateTimer,1000); loadRealData();
+
+async function loadRealData(){
+ try{
+  const {data}=await supabaseClient.from('tickets').select('*');
+  if(data){
+   let counts={lev1:0,lev2:0,lev3:0}; let my={lev1:0,lev2:0,lev3:0};
+   data.forEach(t=>{
+    if(t.level==1){ counts.lev1++; if(t.phone==currentUser.phone) my.lev1+=300; }
+    if(t.level==2){ counts.lev2++; if(t.phone==currentUser.phone) my.lev2+=500; }
+    if(t.level==3){ counts.lev3++; if(t.phone==currentUser.phone) my.lev3+=1000; }
+   });
+   document.getElementById('lev1Users').innerText=counts.lev1;
+   document.getElementById('lev2Users').innerText=counts.lev2;
+   document.getElementById('lev3Users').innerText=counts.lev3;
+   document.getElementById('lev1MyMoney').innerText=my.lev1.toLocaleString()+' Frw';
+   document.getElementById('lev2MyMoney').innerText=my.lev2.toLocaleString()+' Frw';
+   document.getElementById('lev3MyMoney').innerText=my.lev3.toLocaleString()+' Frw';
+   updateBars(counts);
+  }
+ }catch(e){}
+}
+function updateBars(counts){
+ for(let i=1;i<=3;i++){
+  let lev='lev'+i; let got=counts[lev]; let target=CONFIG[lev].targetPoints;
+  let missing=Math.max(0,target-got); let percent=Math.min(100,(got/target)*100).toFixed(1);
+  document.getElementById(lev+'Missing').innerText=missing+' Amanota';
+  document.getElementById(lev+'Bar').style.width=percent+'%';
+  document.getElementById(lev+'Bar').innerText=percent+'%';
+ }
+}
+async function buyTicket(level){
+ if(!confirm(`Uremeza kugura Ticket ya LEV ${level} - ${CONFIG['lev'+level].price} Frw?`)) return;
+ try{
+  const {data:userData}=await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
+  if(!userData || userData.balance < CONFIG['lev'+level].price) return alert('Amafaranga ntabwo ahagije muri Wallet!');
+
+  // Kugabanya muri wallet + kongera ticket
+  await supabaseClient.from('users').update({balance: userData.balance - CONFIG['lev'+level].price}).eq('phone',currentUser.phone);
+  const {error}=await supabaseClient.from('tickets').insert([{phone:currentUser.phone,names:currentUser.names,level:level,price:CONFIG['lev'+level].price}]);
+  if(error) throw error;
+
+  let lev='lev'+level;
+  tombolaData[lev].mySpent+=CONFIG[lev].price;
+  tombolaData[lev].total+=CONFIG[lev].price;
+  localStorage.setItem('tombolaData',JSON.stringify(tombolaData));
+  alert(`Waguze Ticket ya LEV ${level} neza!`);
+  loadRealData();
+ }catch(e){ alert('Error: '+e.message); }
+}
+function updateUI(){
+ for(let i=1;i<=3;i++){
+  let lev='lev'+i;
+  document.getElementById(lev+'TargetPoints').innerText=CONFIG[lev].targetPoints+' Amanota';
+  document.getElementById(lev+'MyMoney').innerText=tombolaData[lev].mySpent.toLocaleString()+' Frw';
+ }
+}
+function updateTimer(){
+ let now=new Date(); let draw=new Date(); draw.setHours(23,0,0,0);
+ if(now>draw) draw.setDate(draw.getDate()+1);
+ let diff=draw-now;
+ let h=Math.floor(diff/1000/60/60),m=Math.floor(diff/1000/60)%60,s=Math.floor(diff/1000)%60;
+ document.getElementById('timer').innerText=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+</script>
+</body>
+</html>
