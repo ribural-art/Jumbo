@@ -25,6 +25,7 @@ body{background:#0a0a0a;color:#fff;}
 .btn-blue{background:#0088FF;color:#fff;}
 .btn-green{background:#00FF00;color:#000;}
 .btn-orange{background:#FFA500;color:#000;}
+.btn-red{background:#FF4444;color:#fff;}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0;}
 .stat-card{background:#1a1a1a;border:1px solid #FFD700;padding:15px;border-radius:12px;text-align:center;}
 .stat-card h4{color:#aaa;font-size:11px;}.stat-card p{color:#FFD700;font-size:20px;font-weight:bold;margin-top:5px;}.stat-card small{color:#00FF00;font-size:10px;display:block;margin-top:3px;}
@@ -40,7 +41,8 @@ body{background:#0a0a0a;color:#fff;}
 .btn-approve{background:#00FF00;color:#000;padding:10px;border:none;border-radius:6px;font-weight:bold;width:50%;cursor:pointer;}
 .btn-reject{background:#FF4444;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:50%;cursor:pointer;}
 .btn-draw{background:#FF00FF;color:#fff;padding:12px;border:none;border-radius:6px;font-weight:bold;width:100%;cursor:pointer;margin-top:5px;}
-.btn-pass{background:#0088FF;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:100%;cursor:pointer;margin-top:5px;}
+.btn-pass{background:#0088FF;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:48%;cursor:pointer;margin-top:5px;}
+.btn-del{background:#FF4444;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:48%;cursor:pointer;margin-top:5px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -58,21 +60,20 @@ body{background:#0a0a0a;color:#fff;}
 <input type="password" id="password" placeholder="Andika Password">
 <button class="btn" onclick="login()">INJIRA</button>
 <p class="error" id="error">Password si yo! (Default: Jumbo@2026)</p>
-<p style="font-size:11px;color:#aaa;margin-top:10px;text-align:center;">Default Pass: Jumbo@2026</p>
 </div>
 </div>
 
 <div class="admin-page" id="adminPage">
 <div class="header"><h2 style="font-size:14px;">👑 ROYALTY ADMIN PRO</h2><button class="logout" onclick="logout()">SOHOKA</button></div>
 
-<!-- ADMIN PASSWORD SETTINGS - NSHYA! -->
+<!-- ADMIN PASSWORD - NAYISUBIJE ARIKO YIHISHE! -->
 <div class="settings-box">
 <h3>🔐 ADMIN PASSWORD SETTINGS</h3>
 <div class="settings-grid">
 <div>
 <p style="font-size:11px;color:#aaa;">Password yawe ubu:</p>
-<input type="text" id="currentPassShow" readonly style="background:#000;color:#00FF00;font-weight:bold;">
-<button class="btn-small btn-blue" onclick="showCurrentPass()">👁️ REBA PASSWORD</button>
+<input type="password" id="currentPassShow" readonly value="****">
+<button class="btn-small btn-blue" onclick="showCurrentPass()">👁️ REBA / HISA</button>
 </div>
 <div>
 <p style="font-size:11px;color:#aaa;">Hindura Password:</p>
@@ -82,8 +83,8 @@ body{background:#0a0a0a;color:#fff;}
 </div>
 </div>
 <div style="margin-top:10px;display:flex;gap:8px;">
-<button class="btn-small btn-orange" onclick="resetToDefault()" style="width:50%;">🔄 Garura kuri Jumbo@2026</button>
-<button class="btn-small btn-blue" onclick="copyPass()" style="width:50%;">📋 Koporora Pass</button>
+<button class="btn-small btn-orange" onclick="resetToDefault()" style="width:50%;">🔄 Garura Default</button>
+<button class="btn-small btn-blue" onclick="copyPass()" style="width:50%;">📋 Koporora</button>
 </div>
 </div>
 
@@ -117,46 +118,34 @@ body{background:#0a0a0a;color:#fff;}
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
 let ADMIN_PASS=localStorage.getItem('admin_pass')||"Jumbo@2026";
 
 function login(){
  if(document.getElementById('username').value.trim()=="CEO" && document.getElementById('password').value.trim()==ADMIN_PASS){
   document.getElementById('loginPage').style.display='none'; document.getElementById('adminPage').style.display='block';
-  document.getElementById('currentPassShow').value="**** (Kanda REBA)";
   loadAll();
  }else document.getElementById('error').style.display='block';
 }
 function logout(){ document.getElementById('loginPage').style.display='flex'; document.getElementById('adminPage').style.display='none'; }
 
-// ADMIN PASSWORD FUNCTIONS - NSHYA!
 function showCurrentPass(){
- document.getElementById('currentPassShow').value=ADMIN_PASS;
- alert("🔑 Password ya Admin ubu ni: "+ADMIN_PASS);
+ let el=document.getElementById('currentPassShow');
+ if(el.type=='password'){ el.type='text'; el.value=ADMIN_PASS; }else{ el.type='password'; el.value='****'; }
 }
-function copyPass(){
- navigator.clipboard.writeText(ADMIN_PASS);
- alert("📋 Password ikoporowe: "+ADMIN_PASS);
- document.getElementById('currentPassShow').value=ADMIN_PASS;
-}
+function copyPass(){ navigator.clipboard.writeText(ADMIN_PASS); alert("📋 Password: "+ADMIN_PASS); }
 function changeAdminPass(){
  let np=document.getElementById('newAdminPass').value.trim();
  let cp=document.getElementById('confirmAdminPass').value.trim();
  if(!np) return alert('Andika password nshya!');
- if(np!=cp) return alert('Password nshya ntizihura! Emeza neza.');
- if(np.length<4) return alert('Password igomba kuba nibura inyuguti 4!');
- localStorage.setItem('admin_pass',np);
- ADMIN_PASS=np;
- alert('✅ Password ya Admin yahinduwe neza!\n\nNshya ni: '+np+'\n\nUbu uzajya winjira niyi!');
+ if(np!=cp) return alert('Ntizihura!');
+ localStorage.setItem('admin_pass',np); ADMIN_PASS=np;
+ alert('✅ Yahinduwe: '+np);
  document.getElementById('newAdminPass').value=''; document.getElementById('confirmAdminPass').value='';
- document.getElementById('currentPassShow').value=np;
 }
 function resetToDefault(){
- if(!confirm('Uremeza gusubiza password kuri Default Jumbo@2026?')) return;
- localStorage.setItem('admin_pass','Jumbo@2026');
- ADMIN_PASS='Jumbo@2026';
- document.getElementById('currentPassShow').value='Jumbo@2026';
- alert('🔄 Password yagaruwe kuri: Jumbo@2026');
+ if(!confirm('Garura kuri Jumbo@2026?')) return;
+ localStorage.setItem('admin_pass','Jumbo@2026'); ADMIN_PASS='Jumbo@2026';
+ alert('🔄 Yagaruwe: Jumbo@2026');
 }
 
 function showTab(tab,el){
@@ -173,8 +162,8 @@ async function loadAll(){
  try{
   const {data:users}=await supabaseClient.from('users').select('*');
   const {data:deposits}=await supabaseClient.from('deposits').select('*');
-  const {data:withdraws}=await supabaseClient.from('withdraws').select('*');
-  const {data:tickets}=await supabaseClient.from('tickets').select('*');
+  const {data:withdraws}=await supabaseClient.from('withdrawals').select('*');
+  const {data:tickets}=await supabaseClient.from('tombola').select('*');
   document.getElementById('totalUsers').innerText=users?users.length:0;
   let totalDep = deposits? deposits.filter(d=>d.status=='approved').reduce((s,d)=>s+(d.amount||0),0) : 0;
   let pendingDep = deposits? deposits.filter(d=>d.status=='pending').length : 0;
@@ -189,10 +178,10 @@ async function loadAll(){
   let todayTickets = tickets? tickets.filter(t=> t.created_at && t.created_at.startsWith(today)).length : 0;
   document.getElementById('dailyIncome').innerText=todayDep.toLocaleString()+' Frw';
   document.getElementById('dailyTickets').innerText='Tickets uyu munsi: '+todayTickets;
-  let jackpot = tickets? tickets.reduce((s,t)=>s+(t.price||0),0):0;
+  let jackpot = tickets? tickets.reduce((s,t)=>s+(t.amount||t.price||0),0):0;
   document.getElementById('jackpot').innerText=jackpot.toLocaleString()+' Frw';
-  loadDeposits(); loadTombola();
- }catch(e){}
+  loadDeposits();
+ }catch(e){ console.log(e); alert('Error loadAll: '+e.message); }
 }
 async function loadDeposits(){
  let box=document.getElementById('depositTab'); box.innerHTML='<p style="text-align:center;padding:20px;color:#888;">Loading...</p>';
@@ -214,11 +203,12 @@ async function approveDeposit(id,phone,amount){
  alert(`✅ ${amount} Frw yemejwe!`); loadAll();
 }
 async function rejectDeposit(id){ await supabaseClient.from('deposits').update({status:'rejected'}).eq('id',id); alert('Yanwe'); loadAll(); }
+
 async function loadWithdraws(){
  let box=document.getElementById('withdrawTab'); box.innerHTML='<p style="text-align:center;padding:20px;">Loading...</p>';
- const {data}=await supabaseClient.from('withdraws').select('*').order('created_at',{ascending:false}).limit(100);
- if(!data||data.length==0){ box.innerHTML='<p style="text-align:center;padding:20px;">Nta withdraw</p>'; return; }
- let html='<h3 style="color:#FF4444;margin:10px 0;">🏦 WITHDRAWS</h3>';
+ const {data}=await supabaseClient.from('withdrawals').select('*').order('created_at',{ascending:false}).limit(100);
+ if(!data||data.length==0){ box.innerHTML='<p style="text-align:center;padding:20px;">Nta withdraw - ariko table ni withdrawals ubu ✅</p>'; return; }
+ let html='<h3 style="color:#FF4444;margin:10px 0;">🏦 WITHDRAWS ('+data.length+')</h3>';
  data.sort((a,b)=> (a.status=='pending'? -1:1));
  data.forEach(d=>{
   let net=Math.floor(d.amount*0.92); let color = d.status=='pending'?'#FFD700': d.status=='approved'?'#00FF00':'#FF4444';
@@ -226,18 +216,19 @@ async function loadWithdraws(){
  });
  box.innerHTML=html;
 }
-async function approveWithdraw(id){ await supabaseClient.from('withdraws').update({status:'approved'}).eq('id',id); alert('✅ Yoherejwe!'); loadAll(); }
-async function rejectWithdraw(id){ await supabaseClient.from('withdraws').update({status:'rejected'}).eq('id',id); alert('Yanwe'); loadAll(); }
+async function approveWithdraw(id){ await supabaseClient.from('withdrawals').update({status:'approved'}).eq('id',id); alert('✅ Yoherejwe!'); loadAll(); }
+async function rejectWithdraw(id){ await supabaseClient.from('withdrawals').update({status:'rejected'}).eq('id',id); alert('Yanwe'); loadAll(); }
+
 async function loadTombola(){
- const {data:tickets}=await supabaseClient.from('tickets').select('*');
+ const {data:tickets}=await supabaseClient.from('tombola').select('*');
  let counts={1:0,2:0,3:0}; let totals={1:0,2:0,3:0};
- if(tickets){ tickets.forEach(t=>{ if(counts[t.level]!=undefined){ counts[t.level]++; totals[t.level]+=t.price; } }); }
+ if(tickets){ tickets.forEach(t=>{ let lvl=t.level||1; if(counts[lvl]!=undefined){ counts[lvl]++; totals[lvl]+= (t.amount||t.price||0); } }); }
  document.getElementById('lev1Users').innerText=counts[1]; document.getElementById('lev1Jackpot').innerText=totals[1].toLocaleString()+' Frw';
  document.getElementById('lev2Users').innerText=counts[2]; document.getElementById('lev2Jackpot').innerText=totals[2].toLocaleString()+' Frw';
  document.getElementById('lev3Users').innerText=counts[3]; document.getElementById('lev3Jackpot').innerText=totals[3].toLocaleString()+' Frw';
 }
 async function doDraw(level){
- const {data:tickets}=await supabaseClient.from('tickets').select('*').eq('level',level);
+ const {data:tickets}=await supabaseClient.from('tombola').select('*').eq('level',level);
  if(!tickets||tickets.length<5) return alert('Ntabwo bageze kuri 5: '+(tickets?tickets.length:0));
  let winners=[...tickets].sort(()=>0.5-Math.random()).slice(0,5);
  let prize= level==1?10000: level==2?15000:20000;
@@ -254,10 +245,15 @@ async function givePrize(phone,prize){
 async function loadUsers(){
  let box=document.getElementById('usersList'); box.innerHTML='Loading...';
  const {data}=await supabaseClient.from('users').select('*').order('created_at',{ascending:false}).limit(200);
- if(!data||data.length==0){ box.innerHTML='Nta mukoresha'; return; }
+ if(!data||data.length==0){ box.innerHTML='Nta mukoresha - Reba niba RLS yihishe data!'; return; }
  let html='<h3 style="color:#0088FF;margin:10px 0;">👥 ABAKORESHA BOSE ('+data.length+')</h3>';
  data.forEach(u=>{
-  html+=`<div class="card user-card"><div class="info"><p><b>${u.names||''}</b> | ${u.phone}</p><p>Bal: ${u.balance||0} Frw | Ref: ${u.referral_balance||0} | ${u.investment_status||'Nta Active'}</p><p style="font-size:10px;color:#888;">Pass: ${u.password||'****'} | ${new Date(u.created_at).toLocaleDateString()}</p></div><input type="text" id="pass${u.phone}" placeholder="Password nshya ya ${u.phone}"><button class="btn-pass" onclick="resetUserPass('${u.phone}')">🔑 HINDURA PASSWORD YA USER</button></div>`;
+  html+=`<div class="card user-card"><div class="info"><p><b>${u.names||''}</b> | ${u.phone}</p><p>Bal: ${u.balance||0} Frw | Ref: ${u.referral_balance||0} | ${u.investment_status||'Nta Active'}</p><p style="font-size:10px;color:#888;">ID: ${u.id} | ${new Date(u.created_at).toLocaleDateString()}</p></div>
+  <input type="text" id="pass${u.phone}" placeholder="Password nshya ya ${u.phone}">
+  <div style="display:flex;gap:5px;">
+  <button class="btn-pass" onclick="resetUserPass('${u.phone}')">🔑 HINDURA PASS</button>
+  <button class="btn-del" onclick="deleteUser('${u.id}','${u.phone}')">🗑️ SIBA USER</button>
+  </div></div>`;
  });
  box.innerHTML=html;
 }
@@ -267,6 +263,11 @@ async function resetUserPass(phone){
  await supabaseClient.from('users').update({password:np}).eq('phone',phone);
  alert(`✅ Password ya ${phone} yahinduwe: ${np}`); document.getElementById('pass'+phone).value='';
 }
+async function deleteUser(id,phone){
+ if(!confirm(`Uremeza gusiba burundu ${phone}?`)) return;
+ const {error}=await supabaseClient.from('users').delete().eq('id',id);
+ if(error) alert(error.message); else { alert('🗑️ '+phone+' Yasibwe!'); loadUsers(); loadAll(); }
+}
 </script>
 </body>
-</html>
+ </html>
