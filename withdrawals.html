@@ -1,1 +1,137 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUMBO - Withdrawals</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#0a0a0a;color:#fff;}
+.navbar{background:#111;padding:15px 20px;border-bottom:2px solid #FFD700;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.logo{color:#FFD700;font-weight:bold;font-size:18px;}
+.links a{color:#fff;text-decoration:none;margin:0 10px;font-size:13px;} .links a:hover{color:#FFD700;}
+.logout{color:#ff4444;cursor:pointer;font-size:13px;}
+.header{background:linear-gradient(90deg,#FFD700,#FFA500);padding:18px;color:#000;font-weight:bold;font-size:18px;text-align:center;}
+.container{padding:20px;max-width:800px;margin:auto;}
+.card{background:#1a1a1a;border:1px solid #FFD700;border-radius:15px;padding:20px;box-shadow:0 0 15px rgba(255,215,0,0.15);margin-bottom:20px;}
+.card h3{color:#FFD700;margin-bottom:15px;text-align:center;}
+.balance{font-size:32px;font-weight:bold;color:#00FF00;text-align:center;margin:10px 0;}
+input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;background:#222;color:#fff;font-size:14px;}
+.btn{background:#FFD700;color:#000;padding:14px 20px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;font-size:15px;}
+.btn2{background:#333;color:#FFD700;padding:12px 20px;border:1px solid #FFD700;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;}
+.locked{color:#ff8888;font-size:13px;text-align:center;margin:8px 0;} .ok{color:#00FF00;font-size:13px;text-align:center;}
+.history-item{border-bottom:1px solid #333;padding:10px 0;display:flex;justify-content:space-between;font-size:12px;}
+.status-pending{color:#FFD700;} .status-approved{color:#00FF00;} .status-rejected{color:#ff4444;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="navbar">
+<div class="logo">👑 JUMBO ROYALTY</div>
+<div class="links">
+<a href="dashboard.html">Dashboard</a>
+<a href="investment.html">Investment</a>
+<a href="tombola.html">Tombola</a>
+<a href="withdrawals.html">Withdrawals</a>
+</div>
+<div class="logout" onclick="logout()">Sohoka</div>
+</div>
 
+<div class="header">🏦 KUBIKUZA - Withdrawals</div>
+
+<div class="container">
+
+<div class="card">
+<h3>💰 Balance Yanjye</h3>
+<p class="balance" id="balance">0 Frw</p>
+<p class="ok">Min: 1000 Frw | Fee: 8% | Uzabona 92%</p>
+</div>
+
+<div class="card">
+<h3>📤 Saba Kubikuza</h3>
+<input type="number" id="withdrawAmount" placeholder="Andika Amafaranga (Min 1000)" oninput="calcFee()">
+<p class="locked">Katwa (8%): <span id="feeAmount">0</span> Frw | Uzabona: <b style="color:#00FF00;"><span id="receiveAmount">0</span> Frw</b></p>
+<select id="method"><option>MTN MoMo</option><option>Airtel Money</option></select>
+<input type="text" id="momoNumber" placeholder="Numero ya MoMo (07...)">
+<button class="btn" onclick="requestWithdraw()">SABA KUBIKUZA NONAHA</button>
+<p class="ok" style="margin-top:10px;">⏱️ Admin azishyura mu minota 30</p>
+</div>
+
+<div class="card">
+<h3>📜 Withdrawals Zanjye</h3>
+<div id="historyBox" style="background:#222;padding:12px;border-radius:8px;max-height:300px;overflow:auto;">
+<p style="color:#666;font-size:12px;text-align:center;">Loading...</p>
+</div>
+<button class="btn2" onclick="loadHistory()">🔄 Refresh History</button>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
+
+function checkLogin(){
+ if(!currentUser||!currentUser.phone){ location.href='index.html'; return; }
+ loadUserData(); loadHistory();
+}
+async function loadUserData(){
+ try{
+  const {data}=await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
+  if(data) document.getElementById('balance').innerText=(data.balance||0).toLocaleString()+' Frw';
+ }catch(e){}
+}
+function calcFee(){
+ let amt=parseInt(document.getElementById('withdrawAmount').value||0);
+ if(amt<0) amt=0;
+ let fee=Math.floor(amt*0.08);
+ document.getElementById('feeAmount').innerText=fee.toLocaleString();
+ document.getElementById('receiveAmount').innerText=(amt-fee).toLocaleString();
+}
+async function requestWithdraw(){
+ let amt=parseInt(document.getElementById('withdrawAmount').value);
+ let method=document.getElementById('method').value;
+ let momo=document.getElementById('momoNumber').value;
+ if(!amt || amt<1000) return alert('Min ni 1000 Frw!');
+ if(!momo) return alert('Andika numero ya MoMo!');
+
+ // Check balance
+ const {data:userData}=await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
+ if(!userData || (userData.balance||0) < amt) return alert('Balance ntihagije! Ufite: '+(userData?.balance||0)+' Frw');
+
+ const {error}=await supabaseClient.from('withdrawals').insert([{
+   phone: currentUser.phone,
+   amount: amt,
+   method: method,
+   momo_number: momo,
+   status: 'pending'
+ }]);
+
+ if(error) alert('Error: '+error.message);
+ else {
+   alert('✅ Gusaba kubikuza byoherejwe!\n\nSaba: '+amt+' Frw\nUzabona: '+(amt-Math.floor(amt*0.08))+' Frw\n\nTegereza Admin!');
+   document.getElementById('withdrawAmount').value='';
+   document.getElementById('momoNumber').value='';
+   calcFee(); loadHistory();
+ }
+}
+async function loadHistory(){
+ let box=document.getElementById('historyBox'); box.innerHTML='Loading...';
+ try{
+  const {data}=await supabaseClient.from('withdrawals').select('*').eq('phone',currentUser.phone).order('created_at',{ascending:false}).limit(20);
+  if(!data||data.length==0){ box.innerHTML="<p style='color:#666;text-align:center;'>Nta withdrawal urasaba</p>"; return; }
+  let html=''; data.forEach(d=>{
+    let color = d.status=='pending'?'status-pending': d.status=='approved'?'status-approved':'status-rejected';
+    let net=Math.floor((d.amount||0)*0.92);
+    html+=`<div class="history-item"><span><b>${d.amount} Frw</b> → ${net} Frw<br><small style="color:#888;">${new Date(d.created_at).toLocaleString()}</small></span><span class="${color}"><b>${d.status}</b></span></div>`;
+  });
+  box.innerHTML=html;
+ }catch(e){ box.innerHTML='Error: '+e.message; }
+}
+function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.html'; }
+checkLogin();
+</script>
+</body>
+  </html>
