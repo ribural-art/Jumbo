@@ -89,8 +89,8 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <h3>📜 History Yanjye</h3>
 <div style="margin:10px 0;">
 <button class="btn2 btn-small" onclick="loadHistory('deposits')">Deposits</button>
-<button class="btn2 btn-small" onclick="loadHistory('withdraws')">Withdraws</button>
-<button class="btn2 btn-small" onclick="loadHistory('tickets')">Tombola</button>
+<button class="btn2 btn-small" onclick="loadHistory('withdrawals')">Withdraws</button>
+<button class="btn2 btn-small" onclick="loadHistory('tombola')">Tombola</button>
 <button class="btn2 btn-small" onclick="loadHistory('investments')">Investments</button>
 </div>
 <div id="historyBox" style="background:#222;padding:12px;border-radius:8px;max-height:220px;overflow:auto;">
@@ -135,7 +135,12 @@ function generateRefLink(phone){
 function copyRef(){ navigator.clipboard.writeText(document.getElementById('refLink').innerText); alert('Link ikoporowe!'); }
 function calcFee(){ let amt=parseInt(document.getElementById('withdrawAmount').value||0); let fee=Math.floor(amt*0.08); document.getElementById('feeAmount').innerText=fee; document.getElementById('receiveAmount').innerText=amt-fee; }
 function claimBonus(){ alert('Bonus ya 1000frw - izaboneka nyuma ya deposit ya mbere 10k+'); }
-async function requestWithdraw(){ let amt=document.getElementById('withdrawAmount').value; if(!amt) return alert('Andika amafaranga!'); const {error}=await supabaseClient.from('withdraws').insert([{phone:currentUser.phone,amount:parseInt(amt),status:'pending'}]); if(error) alert(error.message); else alert('Gusaba kubikuza byoherejwe!'); }
+async function requestWithdraw(){ 
+  let amt=document.getElementById('withdrawAmount').value; 
+  if(!amt) return alert('Andika amafaranga!'); 
+  const {error}=await supabaseClient.from('withdrawals').insert([{phone:currentUser.phone,amount:parseInt(amt),status:'pending'}]); 
+  if(error) alert(error.message); else alert('Gusaba kubikuza byoherejwe!'); 
+}
 async function loadHistory(type){
  let box=document.getElementById('historyBox'); box.innerHTML='Loading...';
  try{
@@ -149,4 +154,4 @@ function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.h
 checkLogin();
 </script>
 </body>
-</html>
+ </html>
