@@ -78,6 +78,16 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <button class="btn2" onclick="copyRef()">Koporora Link</button>
 </div>
 
+<!-- ICYUMA CYA ADS - GISHYA -->
+<div class="card" style="border-color:#00FF00;">
+<h3>📢 AKAZI KA ADS - 70frw</h3>
+<p style="font-size:12px;">Injira muri group usome amabwiriza iminota 2 uhembwe</p>
+<a href="https://chat.whatsapp.com/FGtIDTpV7I7IaYFm4Ygebn" target="_blank" class="btn" style="background:#25D366;color:#000;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer()">JOIN WHATSAPP GROUP</a>
+<a href="https://t.me/riyaltygh" target="_blank" class="btn" style="background:#0088cc;color:white;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer()">JOIN TELEGRAM GROUP</a>
+<p id="adsTimer" style="color:#FFD700;margin-top:10px;font-weight:bold;text-align:center;"></p>
+<button class="btn" id="claimAdsBtn" style="display:none;background:#00FF00;color:#000;" onclick="claimAds()">CLAIM 70frw →</button>
+</div>
+
 <div class="card">
 <h3>🏦 Kubikuza (Withdrawal)</h3>
 <p style="font-size:12px;">Min: 1000 Frw | Cut: 8%</p>
@@ -113,6 +123,8 @@ function checkLogin(){
  if(!currentUser||!currentUser.phone){ location.href='index.html'; return; }
  document.getElementById('username').innerText=currentUser.names;
  loadUserData(); generateRefLink(currentUser.phone);
+ // Reba niba ads timer yariho
+ if(localStorage.getItem('ads_start')){ startAdsTimer(); }
 }
 async function loadUserData(){
  try{
@@ -147,6 +159,41 @@ async function loadHistory(type){
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
 function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.html'; }
+
+// --- ICYUMA CYA ADS ---
+function startAdsTimer(){
+  if(!localStorage.getItem('ads_start')){ localStorage.setItem('ads_start', Date.now()); }
+  let interval = setInterval(()=>{
+    let start = parseInt(localStorage.getItem('ads_start')||0);
+    let diff = Date.now() - start;
+    let remaining = 120000 - diff;
+    let timerEl = document.getElementById('adsTimer');
+    let btnEl = document.getElementById('claimAdsBtn');
+    if(!timerEl) { clearInterval(interval); return; }
+    if(remaining <= 0){
+      clearInterval(interval);
+      timerEl.innerText = "✅ Wujuje iminota 2! Kanda CLAIM";
+      btnEl.style.display = "block";
+    } else {
+      let sec = Math.floor(remaining/1000);
+      timerEl.innerText = `⏳ Hasigaye ${sec} sec... Soma amabwiriza muri group`;
+    }
+  }, 1000);
+}
+async function claimAds(){
+  try{
+    const {data} = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
+    let newBal = (data?.balance||0) + 70;
+    const {error} = await supabaseClient.from('users').update({balance:newBal}).eq('phone',currentUser.phone);
+    if(error) return alert(error.message);
+    alert("✅ Wabonye 70frw muri wallet!");
+    localStorage.removeItem('ads_start');
+    document.getElementById('claimAdsBtn').style.display="none";
+    document.getElementById('adsTimer').innerText="";
+    loadUserData();
+  }catch(e){ alert(e.message); }
+}
+
 checkLogin();
 </script>
 </body>
