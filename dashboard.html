@@ -39,12 +39,9 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 </div>
 <div class="logout" onclick="logout()">Sohoka</div>
 </div>
-
 <div class="header">Welcome <span id="username">CEO</span> 👑</div>
-
 <div class="container">
 <div class="cards">
-
 <div class="card">
 <h3>💰 Amafaranga Yanjye (Wallet)</h3>
 <p class="balance" id="balance">0 Frw</p>
@@ -52,7 +49,6 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <p style="font-size:11px;color:#aaa;">Deposit ya mbere 10k+ = Bonus 1000frw</p>
 <button class="btn" onclick="location.href='investment.html'">Tangira Investment</button>
 </div>
-
 <div class="card">
 <h3>📤 Kohereza Deposit</h3>
 <p style="font-size:11px;">*182*8*1*2169779# Rachel</p>
@@ -62,13 +58,11 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <button class="btn2" onclick="sendDeposit()">Ohereza Deposit</button>
 <p class="ok" style="margin-top:8px;">Admin azemeza muminota 5</p>
 </div>
-
 <div class="card">
 <h3>🎁 Welcome Bonus</h3>
 <p>Status: <span class="ok">1000frw Iraboneka</span></p>
 <button class="btn" onclick="claimBonus()">Kubikuza 1000frw</button>
 </div>
-
 <div class="card">
 <h3>👥 Referral Bonus</h3>
 <p>Lev1: <b style="color:#00FF00;">10%</b> | Lev2: 2% | Lev3: 1%</p>
@@ -77,8 +71,6 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <div class="ref-box" id="refLink">Loading...</div>
 <button class="btn2" onclick="copyRef()">Koporora Link</button>
 </div>
-
-<!-- ICYUMA CYA ADS - GISHYA -->
 <div class="card" style="border-color:#00FF00;">
 <h3>📢 AKAZI KA ADS - 70frw</h3>
 <p style="font-size:12px;">Injira muri group usome amabwiriza iminota 2 uhembwe</p>
@@ -87,7 +79,6 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <p id="adsTimer" style="color:#FFD700;margin-top:10px;font-weight:bold;text-align:center;"></p>
 <button class="btn" id="claimAdsBtn" style="display:none;background:#00FF00;color:#000;" onclick="claimAds()">CLAIM 70frw →</button>
 </div>
-
 <div class="card">
 <h3>🏦 Kubikuza (Withdrawal)</h3>
 <p style="font-size:12px;">Min: 1000 Frw | Cut: 8%</p>
@@ -96,7 +87,6 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <button class="btn" onclick="location.href='withdrawals.html'">JYA KURI WITHDRAWALS →</button>
 <p style="font-size:11px;color:#888;margin-top:5px;">Uzuzuza MoMo + History haho</p>
 </div>
-
 <div class="card" style="grid-column:1 / -1;">
 <h3>📜 History Yanjye</h3>
 <div style="margin:10px 0;">
@@ -109,37 +99,34 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <p style="color:#666;font-size:12px;">Kanda kuri button hejuru urebe history...</p>
 </div>
 </div>
-
 </div>
 </div>
-
 <script>
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
-
 function checkLogin(){
  if(!currentUser||!currentUser.phone){ location.href='index.html'; return; }
- document.getElementById('username').innerText=currentUser.names;
+ document.getElementById('username').innerText=currentUser.names||currentUser.phone;
  loadUserData(); generateRefLink(currentUser.phone);
- // Reba niba ads timer yariho
  if(localStorage.getItem('ads_start')){ startAdsTimer(); }
 }
 async function loadUserData(){
  try{
-  const {data}=await supabaseClient.from('users').select('*').eq('phone',currentUser.phone).single();
+  const {data}=await supabaseClient.from('wallets').select('*').eq('phone',currentUser.phone).single();
   if(data){
    document.getElementById('balance').innerText=(data.balance||0).toLocaleString()+' Frw';
    document.getElementById('refBalance').innerText=(data.referral_balance||0).toLocaleString()+' Frw';
-   if(data.investment_status) document.getElementById('investmentStatus').innerText='✅ '+data.investment_status;
   }
- }catch(e){}
+  const {data:p}=await supabaseClient.from('profiles').select('*').eq('phone',currentUser.phone).single();
+  if(p && p.investment_status) document.getElementById('investmentStatus').innerText='✅ '+p.investment_status;
+ }catch(e){ console.log(e.message); }
 }
 async function sendDeposit(){
  let a=document.getElementById('amount').value,m=document.getElementById('method').value,t=document.getElementById('tef').value;
  if(!a||!t||m=='Hitamo Uburyo') return alert('Uzuza byose!');
- const {error}=await supabaseClient.from('deposits').insert([{phone:currentUser.phone,names:currentUser.names,amount:parseInt(a),method:m,tef:t,status:'pending'}]);
+ const {error}=await supabaseClient.from('deposits').insert([{phone:currentUser.phone,amount:parseInt(a),method:m,tef:t,status:'pending'}]);
  if(error) alert(error.message); else alert('Deposit yoherejwe! Tegereza Admin.');
 }
 function generateRefLink(phone){ 
@@ -159,8 +146,6 @@ async function loadHistory(type){
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
 function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.html'; }
-
-// --- ICYUMA CYA ADS ---
 function startAdsTimer(){
   if(!localStorage.getItem('ads_start')){ localStorage.setItem('ads_start', Date.now()); }
   let interval = setInterval(()=>{
@@ -182,9 +167,9 @@ function startAdsTimer(){
 }
 async function claimAds(){
   try{
-    const {data} = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
+    const {data} = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).single();
     let newBal = (data?.balance||0) + 70;
-    const {error} = await supabaseClient.from('users').update({balance:newBal}).eq('phone',currentUser.phone);
+    const {error} = await supabaseClient.from('wallets').update({balance:newBal}).eq('phone',currentUser.phone);
     if(error) return alert(error.message);
     alert("✅ Wabonye 70frw muri wallet!");
     localStorage.removeItem('ads_start');
@@ -193,7 +178,6 @@ async function claimAds(){
     loadUserData();
   }catch(e){ alert(e.message); }
 }
-
 checkLogin();
 </script>
 </body>
