@@ -114,20 +114,36 @@ function checkLogin(){
 }
 async function loadUserData(){
  try{
-  const {data}=await supabaseClient.from('wallets').select('*').eq('phone',currentUser.phone).single();
-  if(data){
-   document.getElementById('balance').innerText=(data.balance||0).toLocaleString()+' Frw';
-   document.getElementById('refBalance').innerText=(data.referral_balance||0).toLocaleString()+' Frw';
+  let bal=0, refBal=0, invStatus='Nta Active';
+  // Gerageza wallets, niba ntayo gerageza profiles, niba ntayo gerageza users
+  const {data:w} = await supabaseClient.from('wallets').select('*').eq('phone',currentUser.phone).maybeSingle();
+  if(w){ bal=w.balance||0; refBal=w.referral_balance||0; invStatus=w.investment_status||invStatus; }
+  else {
+    const {data:p} = await supabaseClient.from('profiles').select('*').eq('phone',currentUser.phone).maybeSingle();
+    if(p){ bal=p.balance||0; refBal=p.referral_balance||0; invStatus=p.investment_status||invStatus; }
+    else {
+      const {data:u} = await supabaseClient.from('users').select('*').eq('phone',currentUser.phone).maybeSingle();
+      if(u){ bal=u.balance||0; refBal=u.referral_balance||0; invStatus=u.investment_status||invStatus; }
+    }
   }
-  const {data:p}=await supabaseClient.from('profiles').select('*').eq('phone',currentUser.phone).single();
-  if(p && p.investment_status) document.getElementById('investmentStatus').innerText='✅ '+p.investment_status;
- }catch(e){ console.log(e.message); }
+  document.getElementById('balance').innerText=bal.toLocaleString()+' Frw';
+  document.getElementById('refBalance').innerText=refBal.toLocaleString()+' Frw';
+  document.getElementById('investmentStatus').innerText='✅ '+invStatus;
+ }catch(e){ console.log('loadUserData error:', e.message); }
 }
 async function sendDeposit(){
  let a=document.getElementById('amount').value,m=document.getElementById('method').value,t=document.getElementById('tef').value;
  if(!a||!t||m=='Hitamo Uburyo') return alert('Uzuza byose!');
- const {error}=await supabaseClient.from('deposits').insert([{phone:currentUser.phone,amount:parseInt(a),method:m,tef:t,status:'pending'}]);
- if(error) alert(error.message); else alert('Deposit yoherejwe! Tegereza Admin.');
+ const {error}=await supabaseClient.from('deposits').insert([{
+   phone:currentUser.phone,
+   amount:parseInt(a),
+   method:m,
+   tef:t,
+   transaction_id:t,
+   status:'pending',
+   names:currentUser.names||currentUser.phone
+ }]);
+ if(error) alert(error.message); else { alert('✅ Deposit yoherejwe! Tegereza Admin.'); document.getElementById('amount').value=''; document.getElementById('tef').value=''; }
 }
 function generateRefLink(phone){ 
   let baseUrl = 'https://jumbo-omega.vercel.app';
@@ -167,10 +183,17 @@ function startAdsTimer(){
 }
 async function claimAds(){
   try{
-    const {data} = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).single();
-    let newBal = (data?.balance||0) + 70;
-    const {error} = await supabaseClient.from('wallets').update({balance:newBal}).eq('phone',currentUser.phone);
-    if(error) return alert(error.message);
+    let newBal=0; let found=false;
+    const {data:w} = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
+    if(w){ newBal=(w.balance||0)+70; await supabaseClient.from('wallets').update({balance:newBal}).eq('phone',currentUser.phone); found=true; }
+    if(!found){
+      const {data:p} = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
+      if(p){ newBal=(p.balance||0)+70; await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',currentUser.phone); found=true; }
+    }
+    if(!found){
+      const {data:u} = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
+      if(u){ newBal=(u.balance||0)+70; await supabaseClient.from('users').update({balance:newBal}).eq('phone',currentUser.phone); }
+    }
     alert("✅ Wabonye 70frw muri wallet!");
     localStorage.removeItem('ads_start');
     document.getElementById('claimAdsBtn').style.display="none";
