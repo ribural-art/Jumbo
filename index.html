@@ -6,7 +6,7 @@
 <title>JUMBO ROYALTY</title>
 <style>
 body {background:#000; color:white; font-family:Arial; margin:0; padding:20px;}
-.orange{color:orange;} .green{color:#00FF00;}
+.orange{color:orange;}.green{color:#00FF00;}
 .btn{background:orange; color:#000; padding:12px; border:none; border-radius:8px; width:100%; margin:5px 0; font-weight:bold; cursor:pointer; font-size:15px; text-align:center; display:block; text-decoration:none;}
 .btn-green{background:#00FF00; color:#000;}
 .btn-red{background:#dc2626; color:#fff;}
@@ -19,6 +19,7 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 .rule-box {background:#0f1a0f; border-left:4px solid #00FF00; padding:12px; margin:10px 0; border-radius:5px; font-size:14px; line-height:1.7;}
 .header{text-align:center; margin-bottom:20px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -82,27 +83,52 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 <h2 class="orange">📝 IYANDIKISHE UJYE MURI DASHBOARD</h2>
 <p style="font-size:13px; color:#aaa;">Nyuma yo gusoma amabwiriza hejuru, iyandikishe hano ujye muri dashboard yawe</p>
 <input type="text" id="names" placeholder="Amazina yawe yuzuye">
-<input type="tel" id="phone" placeholder="Numero ya MTN/Airtel">
-<button class="btn btn-green" onclick="register()">INJIRA MURI DASHBOARD →</button>
+<input type="tel" id="phone" placeholder="Numero ya MTN/Airtel (07...)">
+<button class="btn btn-green" id="regBtn" onclick="register()">INJIRA MURI DASHBOARD →</button>
+<p id="status" style="text-align:center;font-size:12px;color:#FFD700;margin-top:10px;"></p>
 </div>
 
 <script>
-function register(){
+const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+async function register(){
  let n=document.getElementById('names').value.trim();
  let p=document.getElementById('phone').value.trim();
- if(!n || !p){ alert("Uzuza amazina na numero!"); return; }
- localStorage.setItem('jumbo_user', JSON.stringify({names:n, phone:p}));
- // Supabase save
+ if(!n ||!p){ alert("Uzuza amazina na numero!"); return; }
+ if(p.length < 9){ alert("Numero siyo! Andika 07..."); return; }
+ let btn=document.getElementById('regBtn');
+ btn.innerText="Tegereza..."; btn.disabled=true;
+ document.getElementById('status').innerText="Turimo kubika...";
+
  try{
-  fetch("https://grbltjhhjnvuiezhspau.supabase.co/rest/v1/users", {
-   method:"POST",
-   headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8","Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},
-   body: JSON.stringify({phone:p, names:n})
-  });
- }catch(e){}
- location.href="dashboard.html";
+  // 1. Bika muri profiles (table nyayo)
+  let profileData = {phone:p, names:n, balance:0, investment_status:"Nta Active", referral_balance:0};
+
+  let r1 = await supabaseClient.from('profiles').upsert([profileData], {onConflict:'phone'});
+  if(r1.error){
+    // Gerageza wallets
+    let r2 = await supabaseClient.from('wallets').upsert([{phone:p, balance:0}], {onConflict:'phone'});
+    console.log("wallets:", r2.error||"OK");
+    // Gerageza users ya kera
+    await supabaseClient.from('users').upsert([{phone:p, names:n, balance:0}], {onConflict:'phone'});
+  }
+
+  // 2. Bika localStorage kugirango dashboard ijyemo yihuta
+  localStorage.setItem('jumbo_user', JSON.stringify({names:n, phone:p}));
+
+  document.getElementById('status').innerText="✅ Ubitswe neza! Tujya muri Dashboard...";
+  setTimeout(()=>{ location.href="dashboard.html"; }, 800);
+
+ }catch(e){
+  // Naho byanze, jya muri dashboard nacyo
+  console.log(e.message);
+  localStorage.setItem('jumbo_user', JSON.stringify({names:n, phone:p}));
+  location.href="dashboard.html";
+ }
 }
 </script>
 
 </body>
-</html>
+ </html>
