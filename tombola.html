@@ -103,13 +103,21 @@ updateUI(); setInterval(updateTimer,1000); loadRealData();
 
 async function loadRealData(){
  try{
-  const {data}=await supabaseClient.from('tickets').select('*');
+  // FIX: Table yawe yitwa tombola, si tickets - ngerageza zombi
+  let data=null;
+  let r1 = await supabaseClient.from('tombola').select('*');
+  if(r1.data && r1.data.length>0) data=r1.data;
+  else {
+    let r2 = await supabaseClient.from('tickets').select('*');
+    if(r2.data) data=r2.data;
+  }
   if(data){
    let counts={lev1:0,lev2:0,lev3:0}; let my={lev1:0,lev2:0,lev3:0};
    data.forEach(t=>{
-    if(t.level==1){ counts.lev1++; if(t.phone==currentUser.phone) my.lev1+=300; }
-    if(t.level==2){ counts.lev2++; if(t.phone==currentUser.phone) my.lev2+=500; }
-    if(t.level==3){ counts.lev3++; if(t.phone==currentUser.phone) my.lev3+=1000; }
+    let lvl = t.level || t.lev || 1;
+    if(lvl==1){ counts.lev1++; if(t.phone==currentUser.phone) my.lev1+= (t.amount||t.price||300); }
+    if(lvl==2){ counts.lev2++; if(t.phone==currentUser.phone) my.lev2+= (t.amount||t.price||500); }
+    if(lvl==3){ counts.lev3++; if(t.phone==currentUser.phone) my.lev3+= (t.amount||t.price||1000); }
    });
    document.getElementById('lev1Users').innerText=counts.lev1;
    document.getElementById('lev2Users').innerText=counts.lev2;
@@ -119,7 +127,7 @@ async function loadRealData(){
    document.getElementById('lev3MyMoney').innerText=my.lev3.toLocaleString()+' Frw';
    updateBars(counts);
   }
- }catch(e){}
+ }catch(e){ console.log(e.message); }
 }
 function updateBars(counts){
  for(let i=1;i<=3;i++){
@@ -133,19 +141,42 @@ function updateBars(counts){
 async function buyTicket(level){
  if(!confirm(`Uremeza kugura Ticket ya LEV ${level} - ${CONFIG['lev'+level].price} Frw?`)) return;
  try{
-  const {data:userData}=await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
-  if(!userData || userData.balance < CONFIG['lev'+level].price) return alert('Amafaranga ntabwo ahagije muri Wallet!');
+  // FIX: Gerageza profiles mbere
+  let userData=null; let tableName='profiles';
+  let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
+  if(r1.data){ userData=r1.data; tableName='profiles'; }
+  else {
+    let r2 = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
+    if(r2.data){ userData=r2.data; tableName='wallets'; }
+    else {
+      let r3 = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
+      if(r3.data){ userData=r3.data; tableName='users'; }
+    }
+  }
+  if(!userData || (userData.balance||0) < CONFIG['lev'+level].price) return alert('Amafaranga ntabwo ahagije muri Wallet!');
 
-  // Kugabanya muri wallet + kongera ticket
-  await supabaseClient.from('users').update({balance: userData.balance - CONFIG['lev'+level].price}).eq('phone',currentUser.phone);
-  const {error}=await supabaseClient.from('tickets').insert([{phone:currentUser.phone,names:currentUser.names,level:level,price:CONFIG['lev'+level].price}]);
-  if(error) throw error;
+  // Kugabanya muri wallet
+  await supabaseClient.from(tableName).update({balance: userData.balance - CONFIG['lev'+level].price}).eq('phone',currentUser.phone);
+
+  // FIX: Bika muri tombola (table yawe nyayo)
+  let insertRes = await supabaseClient.from('tombola').insert([{
+    phone:currentUser.phone,
+    names:currentUser.names||currentUser.phone,
+    level:level,
+    amount:CONFIG['lev'+level].price,
+    price:CONFIG['lev'+level].price,
+    type:'ticket'
+  }]);
+  if(insertRes.error){
+    // Niba tombola idahari, gerageza tickets
+    await supabaseClient.from('tickets').insert([{phone:currentUser.phone,names:currentUser.names||currentUser.phone,level:level,price:CONFIG['lev'+level].price}]);
+  }
 
   let lev='lev'+level;
   tombolaData[lev].mySpent+=CONFIG[lev].price;
   tombolaData[lev].total+=CONFIG[lev].price;
   localStorage.setItem('tombolaData',JSON.stringify(tombolaData));
-  alert(`Waguze Ticket ya LEV ${level} neza!`);
+  alert(`✅ Waguze Ticket ya LEV ${level} neza!`);
   loadRealData();
  }catch(e){ alert('Error: '+e.message); }
 }
@@ -165,4 +196,4 @@ function updateTimer(){
 }
 </script>
 </body>
-</html>
+ </html>
