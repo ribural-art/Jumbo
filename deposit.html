@@ -105,12 +105,11 @@ async function submitDeposit(){
 
  try{
   const {error}=await supabaseClient.from('deposits').insert([{
+   user_id: currentUser.id,
    phone: currentUser.phone,
-   names: currentUser.names || '',
    amount: amt,
    method: method,
    tef: txid,
-   plan: plan || 'Deposit',
    status: 'pending'
   }]);
   if(error) throw error;
@@ -118,7 +117,6 @@ async function submitDeposit(){
   msg.style.color='#00FF00';
   msg.innerText='✅ Deposit yoherejwe! Admin azayemeza vuba.';
   alert('✅ Deposit yoherejwe neza!\n\nTegereza Admin ayemeze muri 5 min.\n\nUzabona 1000 Frw bonus + Investment itangire.');
-
   setTimeout(()=>{ location.href='dashboard.html'; },1500);
 
  }catch(e){
@@ -130,4 +128,4 @@ async function submitDeposit(){
 }
 </script>
 </body>
-</html>
+ </html>
