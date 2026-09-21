@@ -79,9 +79,19 @@ function checkLogin(){
 }
 async function loadUserData(){
  try{
-  const {data}=await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
-  if(data) document.getElementById('balance').innerText=(data.balance||0).toLocaleString()+' Frw';
- }catch(e){}
+  let bal=0;
+  let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
+  if(r1.data) bal=r1.data.balance||0;
+  else {
+    let r2 = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
+    if(r2.data) bal=r2.data.balance||0;
+    else {
+      let r3 = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
+      if(r3.data) bal=r3.data.balance||0;
+    }
+  }
+  document.getElementById('balance').innerText=bal.toLocaleString()+' Frw';
+ }catch(e){ console.log(e.message); }
 }
 function calcFee(){
  let amt=parseInt(document.getElementById('withdrawAmount').value||0);
@@ -97,12 +107,23 @@ async function requestWithdraw(){
  if(!amt || amt<1000) return alert('Min ni 1000 Frw!');
  if(!momo) return alert('Andika numero ya MoMo!');
 
- // Check balance
- const {data:userData}=await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).single();
+ // FIX: Check balance muri profiles/wallets/users
+ let userData=null;
+ let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
+ if(r1.data) userData=r1.data;
+ else {
+   let r2 = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
+   if(r2.data) userData=r2.data;
+   else {
+     let r3 = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
+     if(r3.data) userData=r3.data;
+   }
+ }
  if(!userData || (userData.balance||0) < amt) return alert('Balance ntihagije! Ufite: '+(userData?.balance||0)+' Frw');
 
  const {error}=await supabaseClient.from('withdrawals').insert([{
    phone: currentUser.phone,
+   names: currentUser.names||currentUser.phone,
    amount: amt,
    method: method,
    momo_number: momo,
@@ -134,4 +155,4 @@ function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.h
 checkLogin();
 </script>
 </body>
-  </html>
+ </html>
