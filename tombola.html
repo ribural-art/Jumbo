@@ -103,7 +103,6 @@ updateUI(); setInterval(updateTimer,1000); loadRealData();
 
 async function loadRealData(){
  try{
-  // FIX: Table yawe yitwa tombola, si tickets - ngerageza zombi
   let data=null;
   let r1 = await supabaseClient.from('tombola').select('*');
   if(r1.data && r1.data.length>0) data=r1.data;
@@ -129,19 +128,36 @@ async function loadRealData(){
   }
  }catch(e){ console.log(e.message); }
 }
+
 function updateBars(counts){
+ // LOGIC YONGEWE HANO - Ibya rubanda tubireke uko biri
+ let poolStatus = JSON.parse(localStorage.getItem('poolStatus')||'{}');
+
  for(let i=1;i<=3;i++){
   let lev='lev'+i; let got=counts[lev]; let target=CONFIG[lev].targetPoints;
   let missing=Math.max(0,target-got); let percent=Math.min(100,(got/target)*100).toFixed(1);
   document.getElementById(lev+'Missing').innerText=missing+' Amanota';
   document.getElementById(lev+'Bar').style.width=percent+'%';
   document.getElementById(lev+'Bar').innerText=percent+'%';
+
+  // --- LOGIC YAWE Y'INGENZI ---
+  // Niba amanota ataruzura = icyuma gikomeza kubara
+  // Niba yuzuye = giteguye gutanga tokens
+  if(missing > 0){
+    poolStatus[lev] = {ready:false, got:got, target:target, missing:missing, totalMoney: got*CONFIG[lev].price, need: target*CONFIG[lev].price};
+  } else {
+    poolStatus[lev] = {ready:true, got:got, target:target, totalMoney: got*CONFIG[lev].price, prize: 5*CONFIG[lev].prize, profit: (got*CONFIG[lev].price)-(5*CONFIG[lev].prize)};
+  }
  }
+ // Ibi wowe admin uzabibona muri admin.html
+ localStorage.setItem('poolStatus', JSON.stringify(poolStatus));
+ // Na muri Supabase ushobora kubibona
+ console.log("POOL STATUS FOR ADMIN:", poolStatus);
 }
+
 async function buyTicket(level){
  if(!confirm(`Uremeza kugura Ticket ya LEV ${level} - ${CONFIG['lev'+level].price} Frw?`)) return;
  try{
-  // FIX: Gerageza profiles mbere
   let userData=null; let tableName='profiles';
   let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
   if(r1.data){ userData=r1.data; tableName='profiles'; }
@@ -154,11 +170,7 @@ async function buyTicket(level){
     }
   }
   if(!userData || (userData.balance||0) < CONFIG['lev'+level].price) return alert('Amafaranga ntabwo ahagije muri Wallet!');
-
-  // Kugabanya muri wallet
   await supabaseClient.from(tableName).update({balance: userData.balance - CONFIG['lev'+level].price}).eq('phone',currentUser.phone);
-
-  // FIX: Bika muri tombola (table yawe nyayo)
   let insertRes = await supabaseClient.from('tombola').insert([{
     phone:currentUser.phone,
     names:currentUser.names||currentUser.phone,
@@ -168,10 +180,8 @@ async function buyTicket(level){
     type:'ticket'
   }]);
   if(insertRes.error){
-    // Niba tombola idahari, gerageza tickets
     await supabaseClient.from('tickets').insert([{phone:currentUser.phone,names:currentUser.names||currentUser.phone,level:level,price:CONFIG['lev'+level].price}]);
   }
-
   let lev='lev'+level;
   tombolaData[lev].mySpent+=CONFIG[lev].price;
   tombolaData[lev].total+=CONFIG[lev].price;
