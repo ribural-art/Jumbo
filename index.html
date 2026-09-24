@@ -28,7 +28,6 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 <p>WIN BIG. PLAY SMART.</p>
 </div>
 
-<!-- 1. UKO BUSINESS IKORA -->
 <div class="card card-orange">
 <h2 class="orange">💼 UKO BUSINESS IKORA</h2>
 <p style="font-size:14px; line-height:1.6;">
@@ -38,7 +37,6 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 </p>
 </div>
 
-<!-- 2. TOMBOLA + AMABWIRIZA YAWE NYINE -->
 <div class="card">
 <h2 class="orange">🎟️ TOMBOLA JUMBO</h2>
 <div class="jackpot">
@@ -56,7 +54,6 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 <p><b>LEV3:</b> 1000frw → win 30,000frw</p>
 </div>
 
-<!-- 3. INVESTMENT -->
 <div class="card">
 <h2 class="orange">INVESTMENT PLANS</h2>
 <div class="plan"><b>J1:</b> 10,000frw = 400frw/buri munsi = 20,000frw</div>
@@ -66,7 +63,6 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 <div class="plan"><b>J5:</b> 50,000frw = 2,000frw/buri munsi = 100,000frw</div>
 </div>
 
-<!-- 4. ADS + GROUPS -->
 <div class="card">
 <h2 class="orange">📢 AKAZI KA ADS + JOIN US</h2>
 <div style="background:#001100; border:1px dashed #00FF00; padding:12px; border-radius:8px; text-align:center;">
@@ -78,7 +74,6 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 <div class="note">Kwishyura: <b>*182*8*1*2169779#</b> - Rachel</div>
 </div>
 
-<!-- 5. REGISTER IRI HANO HASI MURI INDEX NYINE -->
 <div class="card card-orange" id="register">
 <h2 class="orange">📝 IYANDIKISHE UJYE MURI DASHBOARD</h2>
 <p style="font-size:13px; color:#aaa;">Nyuma yo gusoma amabwiriza hejuru, iyandikishe hano ujye muri dashboard yawe</p>
@@ -103,32 +98,19 @@ async function register(){
  document.getElementById('status').innerText="Turimo kubika...";
 
  try{
-  // 1. Bika muri profiles (table nyayo)
-  let profileData = {phone:p, names:n, balance:0, investment_status:"Nta Active", referral_balance:0};
-
-  let r1 = await supabaseClient.from('profiles').upsert([profileData], {onConflict:'phone'});
-  if(r1.error){
-    // Gerageza wallets
-    let r2 = await supabaseClient.from('wallets').upsert([{phone:p, balance:0}], {onConflict:'phone'});
-    console.log("wallets:", r2.error||"OK");
-    // Gerageza users ya kera
-    await supabaseClient.from('users').upsert([{phone:p, names:n, balance:0}], {onConflict:'phone'});
-  }
-
-  // 2. Bika localStorage kugirango dashboard ijyemo yihuta
-  localStorage.setItem('jumbo_user', JSON.stringify({names:n, phone:p}));
+  let profileData = {phone:p, names:n, balance:0, investment_status:"inactive", referral_balance:0};
+  let { error } = await supabaseClient.from('profiles').upsert([profileData], {onConflict:'phone'});
+  if(error) throw error;
 
   document.getElementById('status').innerText="✅ Ubitswe neza! Tujya muri Dashboard...";
-  setTimeout(()=>{ location.href="dashboard.html"; }, 800);
+  setTimeout(()=>{ location.href="dashboard.html?phone="+encodeURIComponent(p); }, 800);
 
  }catch(e){
-  // Naho byanze, jya muri dashboard nacyo
-  console.log(e.message);
-  localStorage.setItem('jumbo_user', JSON.stringify({names:n, phone:p}));
-  location.href="dashboard.html";
+  document.getElementById('status').innerText="❌ "+e.message;
+  btn.innerText="INJIRA MURI DASHBOARD →"; btn.disabled=false;
  }
 }
 </script>
 
 </body>
- </html>
+</html>
