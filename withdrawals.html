@@ -29,10 +29,10 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 <div class="navbar">
 <div class="logo">👑 JUMBO ROYALTY</div>
 <div class="links">
-<a href="dashboard.html">Dashboard</a>
-<a href="investment.html">Investment</a>
-<a href="tombola.html">Tombola</a>
-<a href="withdrawals.html">Withdrawals</a>
+<a href="#" onclick="go('dashboard.html')">Dashboard</a>
+<a href="#" onclick="go('investment.html')">Investment</a>
+<a href="#" onclick="go('tombola.html')">Tombola</a>
+<a href="#" onclick="go('withdrawals.html')">Withdrawals</a>
 </div>
 <div class="logout" onclick="logout()">Sohoka</div>
 </div>
@@ -71,28 +71,28 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
 
-function checkLogin(){
- if(!currentUser||!currentUser.phone){ location.href='index.html'; return; }
- loadUserData(); loadHistory();
-}
+const urlParams = new URLSearchParams(window.location.search);
+let USER_PHONE = urlParams.get('phone');
+let USER_NAME = "";
+let USER_BALANCE = 0;
+
+if(!USER_PHONE){ location.href='index.html'; }
+
+function go(page){ location.href=page+"?phone="+encodeURIComponent(USER_PHONE); }
+function logout(){ location.href='index.html'; }
+
 async function loadUserData(){
  try{
-  let bal=0;
-  let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
-  if(r1.data) bal=r1.data.balance||0;
-  else {
-    let r2 = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
-    if(r2.data) bal=r2.data.balance||0;
-    else {
-      let r3 = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
-      if(r3.data) bal=r3.data.balance||0;
-    }
-  }
-  document.getElementById('balance').innerText=bal.toLocaleString()+' Frw';
+  const {data}=await supabaseClient.from('profiles').select('*').eq('phone', USER_PHONE).maybeSingle();
+  if(!data){ location.href='index.html'; return; }
+  USER_NAME=data.names;
+  USER_BALANCE=data.balance||0;
+  document.getElementById('balance').innerText=USER_BALANCE.toLocaleString()+' Frw';
  }catch(e){ console.log(e.message); }
+ loadHistory();
 }
+
 function calcFee(){
  let amt=parseInt(document.getElementById('withdrawAmount').value||0);
  if(amt<0) amt=0;
@@ -100,6 +100,7 @@ function calcFee(){
  document.getElementById('feeAmount').innerText=fee.toLocaleString();
  document.getElementById('receiveAmount').innerText=(amt-fee).toLocaleString();
 }
+
 async function requestWithdraw(){
  let amt=parseInt(document.getElementById('withdrawAmount').value);
  let method=document.getElementById('method').value;
@@ -107,41 +108,39 @@ async function requestWithdraw(){
  if(!amt || amt<1000) return alert('Min ni 1000 Frw!');
  if(!momo) return alert('Andika numero ya MoMo!');
 
- // FIX: Check balance muri profiles/wallets/users
- let userData=null;
- let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
- if(r1.data) userData=r1.data;
- else {
-   let r2 = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
-   if(r2.data) userData=r2.data;
-   else {
-     let r3 = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
-     if(r3.data) userData=r3.data;
-   }
- }
- if(!userData || (userData.balance||0) < amt) return alert('Balance ntihagije! Ufite: '+(userData?.balance||0)+' Frw');
+ // Check balance muri profiles IMWE
+ const {data:profile}=await supabaseClient.from('profiles').select('balance').eq('phone', USER_PHONE).maybeSingle();
+ if(!profile || (profile.balance||0) < amt) return alert('Balance ntihagije! Ufite: '+(profile?.balance||0)+' Frw');
+
+ // Kura muri profiles
+ let newBal = (profile.balance||0) - amt;
+ await supabaseClient.from('profiles').update({balance:newBal}).eq('phone', USER_PHONE);
 
  const {error}=await supabaseClient.from('withdrawals').insert([{
-   phone: currentUser.phone,
-   names: currentUser.names||currentUser.phone,
+   phone: USER_PHONE,
+   names: USER_NAME,
    amount: amt,
    method: method,
    momo_number: momo,
    status: 'pending'
  }]);
 
- if(error) alert('Error: '+error.message);
- else {
-   alert('✅ Gusaba kubikuza byoherejwe!\n\nSaba: '+amt+' Frw\nUzabona: '+(amt-Math.floor(amt*0.08))+' Frw\n\nTegereza Admin!');
+ if(error){
+   // Garura balance niba byanze
+   await supabaseClient.from('profiles').update({balance:profile.balance}).eq('phone', USER_PHONE);
+   alert('Error: '+error.message);
+ } else {
+   alert('✅ Gusaba kubikuza byoherejwe!\nSaba: '+amt+' Frw\nUzabona: '+(amt-Math.floor(amt*0.08))+' Frw');
    document.getElementById('withdrawAmount').value='';
    document.getElementById('momoNumber').value='';
-   calcFee(); loadHistory();
+   calcFee(); loadUserData();
  }
 }
+
 async function loadHistory(){
  let box=document.getElementById('historyBox'); box.innerHTML='Loading...';
  try{
-  const {data}=await supabaseClient.from('withdrawals').select('*').eq('phone',currentUser.phone).order('created_at',{ascending:false}).limit(20);
+  const {data}=await supabaseClient.from('withdrawals').select('*').eq('phone', USER_PHONE).order('created_at',{ascending:false}).limit(20);
   if(!data||data.length==0){ box.innerHTML="<p style='color:#666;text-align:center;'>Nta withdrawal urasaba</p>"; return; }
   let html=''; data.forEach(d=>{
     let color = d.status=='pending'?'status-pending': d.status=='approved'?'status-approved':'status-rejected';
@@ -151,8 +150,8 @@ async function loadHistory(){
   box.innerHTML=html;
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
-function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.html'; }
-checkLogin();
+
+loadUserData();
 </script>
 </body>
- </html>
+</html>
