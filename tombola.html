@@ -29,7 +29,7 @@ body{background:#000;color:#fff;padding:15px;}
 
 <div class="navbar">
 <div style="color:#FFD700;font-weight:bold;">👑 JUMBO</div>
-<div><a href="dashboard.html">Dashboard</a><a href="investment.html">Investment</a><a href="tombola.html" style="color:#FFD700;">Tombola</a></div>
+<div><a href="#" onclick="go('dashboard.html')">Dashboard</a><a href="#" onclick="go('investment.html')">Investment</a><a href="#" onclick="go('tombola.html')" style="color:#FFD700;">Tombola</a></div>
 </div>
 
 <div class="header">
@@ -42,161 +42,107 @@ body{background:#000;color:#fff;padding:15px;}
 <p id="timer">23:59:59</p>
 </div>
 
-<!-- LEV 1 -->
 <div class="level">
 <h2>🏆 LEV 1</h2>
 <p class="prize">300 Frw → Utsindira 10,000 Frw</p>
-<div class="info"><span>Target:</span> <b id="lev1TargetPoints">334 Amanota</b></div>
+<div class="info"><span>Target:</span> <b>334 Tickets</b></div>
 <div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev1MyMoney">0 Frw</b></div>
-<div class="info missing"><span>Ibura:</span> <b id="lev1Missing">334 Amanota</b></div>
-<div class="info"><span>Abaguzi Bose:</span> <b id="lev1Users">0</b></div>
+<div class="info missing"><span>Ibura:</span> <b id="lev1Missing">334</b></div>
+<div class="info"><span>Abaguzi Bose:</span> <b id="lev1Users">0 / 334</b></div>
 <div class="progress"><div class="progress-bar" id="lev1Bar">0%</div></div>
 <button class="btn-buy" onclick="buyTicket(1)">GURA TICKET - 300 Frw</button>
-<p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p>
-<div id="lev1Winners" style="display:none;margin-top:10px;"></div>
 </div>
 
-<!-- LEV 2 -->
 <div class="level">
 <h2>👑 LEV 2</h2>
 <p class="prize">500 Frw → Utsindira 15,000 Frw</p>
-<div class="info"><span>Target:</span> <b id="lev2TargetPoints">300 Amanota</b></div>
+<div class="info"><span>Target:</span> <b>300 Tickets</b></div>
 <div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev2MyMoney">0 Frw</b></div>
-<div class="info missing"><span>Ibura:</span> <b id="lev2Missing">300 Amanota</b></div>
-<div class="info"><span>Abaguzi Bose:</span> <b id="lev2Users">0</b></div>
+<div class="info missing"><span>Ibura:</span> <b id="lev2Missing">300</b></div>
+<div class="info"><span>Abaguzi Bose:</span> <b id="lev2Users">0 / 300</b></div>
 <div class="progress"><div class="progress-bar" id="lev2Bar">0%</div></div>
 <button class="btn-buy" onclick="buyTicket(2)">GURA TICKET - 500 Frw</button>
-<p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p>
-<div id="lev2Winners" style="display:none;margin-top:10px;"></div>
 </div>
 
-<!-- LEV 3 -->
 <div class="level">
 <h2>💎 LEV 3</h2>
 <p class="prize">1000 Frw → Utsindira 20,000 Frw</p>
-<div class="info"><span>Target:</span> <b id="lev3TargetPoints">200 Amanota</b></div>
+<div class="info"><span>Target:</span> <b>200 Tickets</b></div>
 <div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev3MyMoney">0 Frw</b></div>
-<div class="info missing"><span>Ibura:</span> <b id="lev3Missing">200 Amanota</b></div>
-<div class="info"><span>Abaguzi Bose:</span> <b id="lev3Users">0</b></div>
+<div class="info missing"><span>Ibura:</span> <b id="lev3Missing">200</b></div>
+<div class="info"><span>Abaguzi Bose:</span> <b id="lev3Users">0 / 200</b></div>
 <div class="progress"><div class="progress-bar" id="lev3Bar">0%</div></div>
 <button class="btn-buy" onclick="buyTicket(3)">GURA TICKET - 1000 Frw</button>
-<p class="note">* Abantu 5 bahembwa. 1 Ticket = 1 Inota</p>
-<div id="lev3Winners" style="display:none;margin-top:10px;"></div>
 </div>
 
 <script>
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
-if(!currentUser) location.href='index.html';
+
+const urlParams = new URLSearchParams(window.location.search);
+let USER_PHONE = urlParams.get('phone');
+let USER_NAME = "";
+if(!USER_PHONE){ location.href='index.html'; }
+
+function go(page){ location.href=page+"?phone="+encodeURIComponent(USER_PHONE); }
 
 const CONFIG={
- lev1:{price:300,targetPoints:334,prize:10000},
- lev2:{price:500,targetPoints:300,prize:15000},
- lev3:{price:1000,targetPoints:200,prize:20000}
+ 1:{price:300,target:334,prize:10000},
+ 2:{price:500,target:300,prize:15000},
+ 3:{price:1000,target:200,prize:20000}
 };
 
-let tombolaData=JSON.parse(localStorage.getItem('tombolaData'))||{lev1:{total:0,users:[],mySpent:0},lev2:{total:0,users:[],mySpent:0},lev3:{total:0,users:[],mySpent:0}};
-
-updateUI(); setInterval(updateTimer,1000); loadRealData();
-
-async function loadRealData(){
+async function loadData(){
  try{
-  let data=null;
-  let r1 = await supabaseClient.from('tombola').select('*');
-  if(r1.data && r1.data.length>0) data=r1.data;
-  else {
-    let r2 = await supabaseClient.from('tickets').select('*');
-    if(r2.data) data=r2.data;
-  }
-  if(data){
-   let counts={lev1:0,lev2:0,lev3:0}; let my={lev1:0,lev2:0,lev3:0};
-   data.forEach(t=>{
-    let lvl = t.level || t.lev || 1;
-    if(lvl==1){ counts.lev1++; if(t.phone==currentUser.phone) my.lev1+= (t.amount||t.price||300); }
-    if(lvl==2){ counts.lev2++; if(t.phone==currentUser.phone) my.lev2+= (t.amount||t.price||500); }
-    if(lvl==3){ counts.lev3++; if(t.phone==currentUser.phone) my.lev3+= (t.amount||t.price||1000); }
+  const {data:profile}=await supabaseClient.from('profiles').select('*').eq('phone', USER_PHONE).maybeSingle();
+  if(!profile){ location.href='index.html'; return; }
+  USER_NAME=profile.names;
+
+  const {data:tickets}=await supabaseClient.from('tombola').select('*');
+  let counts={1:0,2:0,3:0}; let my={1:0,2:0,3:0};
+  if(tickets){
+   tickets.forEach(t=>{
+    let lvl=Number(t.level)||1;
+    if(counts[lvl]!=undefined){
+     counts[lvl]++;
+     if(t.phone==USER_PHONE) my[lvl]+= (t.amount||CONFIG[lvl].price);
+    }
    });
-   document.getElementById('lev1Users').innerText=counts.lev1;
-   document.getElementById('lev2Users').innerText=counts.lev2;
-   document.getElementById('lev3Users').innerText=counts.lev3;
-   document.getElementById('lev1MyMoney').innerText=my.lev1.toLocaleString()+' Frw';
-   document.getElementById('lev2MyMoney').innerText=my.lev2.toLocaleString()+' Frw';
-   document.getElementById('lev3MyMoney').innerText=my.lev3.toLocaleString()+' Frw';
-   updateBars(counts);
+  }
+  for(let i=1;i<=3;i++){
+   let got=counts[i]; let target=CONFIG[i].target;
+   let missing=Math.max(0,target-got);
+   let percent=Math.min(100,(got/target)*100).toFixed(1);
+   document.getElementById('lev'+i+'Users').innerText=got+' / '+target;
+   document.getElementById('lev'+i+'Missing').innerText=missing;
+   document.getElementById('lev'+i+'MyMoney').innerText=my[i].toLocaleString()+' Frw';
+   document.getElementById('lev'+i+'Bar').style.width=percent+'%';
+   document.getElementById('lev'+i+'Bar').innerText=percent+'%';
   }
  }catch(e){ console.log(e.message); }
 }
 
-function updateBars(counts){
- // LOGIC YONGEWE HANO - Ibya rubanda tubireke uko biri
- let poolStatus = JSON.parse(localStorage.getItem('poolStatus')||'{}');
-
- for(let i=1;i<=3;i++){
-  let lev='lev'+i; let got=counts[lev]; let target=CONFIG[lev].targetPoints;
-  let missing=Math.max(0,target-got); let percent=Math.min(100,(got/target)*100).toFixed(1);
-  document.getElementById(lev+'Missing').innerText=missing+' Amanota';
-  document.getElementById(lev+'Bar').style.width=percent+'%';
-  document.getElementById(lev+'Bar').innerText=percent+'%';
-
-  // --- LOGIC YAWE Y'INGENZI ---
-  // Niba amanota ataruzura = icyuma gikomeza kubara
-  // Niba yuzuye = giteguye gutanga tokens
-  if(missing > 0){
-    poolStatus[lev] = {ready:false, got:got, target:target, missing:missing, totalMoney: got*CONFIG[lev].price, need: target*CONFIG[lev].price};
-  } else {
-    poolStatus[lev] = {ready:true, got:got, target:target, totalMoney: got*CONFIG[lev].price, prize: 5*CONFIG[lev].prize, profit: (got*CONFIG[lev].price)-(5*CONFIG[lev].prize)};
-  }
- }
- // Ibi wowe admin uzabibona muri admin.html
- localStorage.setItem('poolStatus', JSON.stringify(poolStatus));
- // Na muri Supabase ushobora kubibona
- console.log("POOL STATUS FOR ADMIN:", poolStatus);
-}
-
 async function buyTicket(level){
- if(!confirm(`Uremeza kugura Ticket ya LEV ${level} - ${CONFIG['lev'+level].price} Frw?`)) return;
+ if(!confirm(`Uremeza kugura LEV ${level} - ${CONFIG[level].price} Frw?`)) return;
  try{
-  let userData=null; let tableName='profiles';
-  let r1 = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
-  if(r1.data){ userData=r1.data; tableName='profiles'; }
-  else {
-    let r2 = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
-    if(r2.data){ userData=r2.data; tableName='wallets'; }
-    else {
-      let r3 = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
-      if(r3.data){ userData=r3.data; tableName='users'; }
-    }
-  }
-  if(!userData || (userData.balance||0) < CONFIG['lev'+level].price) return alert('Amafaranga ntabwo ahagije muri Wallet!');
-  await supabaseClient.from(tableName).update({balance: userData.balance - CONFIG['lev'+level].price}).eq('phone',currentUser.phone);
-  let insertRes = await supabaseClient.from('tombola').insert([{
-    phone:currentUser.phone,
-    names:currentUser.names||currentUser.phone,
+  const {data:profile}=await supabaseClient.from('profiles').select('balance').eq('phone', USER_PHONE).maybeSingle();
+  if(!profile || (profile.balance||0) < CONFIG[level].price) return alert('Balance ntihagije!');
+  let newBal = profile.balance - CONFIG[level].price;
+  await supabaseClient.from('profiles').update({balance:newBal}).eq('phone', USER_PHONE);
+  const {error}=await supabaseClient.from('tombola').insert([{
+    phone:USER_PHONE,
+    names:USER_NAME,
     level:level,
-    amount:CONFIG['lev'+level].price,
-    price:CONFIG['lev'+level].price,
-    type:'ticket'
+    amount:CONFIG[level].price,
+    price:CONFIG[level].price
   }]);
-  if(insertRes.error){
-    await supabaseClient.from('tickets').insert([{phone:currentUser.phone,names:currentUser.names||currentUser.phone,level:level,price:CONFIG['lev'+level].price}]);
-  }
-  let lev='lev'+level;
-  tombolaData[lev].mySpent+=CONFIG[lev].price;
-  tombolaData[lev].total+=CONFIG[lev].price;
-  localStorage.setItem('tombolaData',JSON.stringify(tombolaData));
-  alert(`✅ Waguze Ticket ya LEV ${level} neza!`);
-  loadRealData();
+  if(error) throw error;
+  alert(`✅ Ticket LEV ${level} waguzwe!`);
+  loadData();
  }catch(e){ alert('Error: '+e.message); }
 }
-function updateUI(){
- for(let i=1;i<=3;i++){
-  let lev='lev'+i;
-  document.getElementById(lev+'TargetPoints').innerText=CONFIG[lev].targetPoints+' Amanota';
-  document.getElementById(lev+'MyMoney').innerText=tombolaData[lev].mySpent.toLocaleString()+' Frw';
- }
-}
+
 function updateTimer(){
  let now=new Date(); let draw=new Date(); draw.setHours(23,0,0,0);
  if(now>draw) draw.setDate(draw.getDate()+1);
@@ -204,6 +150,10 @@ function updateTimer(){
  let h=Math.floor(diff/1000/60/60),m=Math.floor(diff/1000/60)%60,s=Math.floor(diff/1000)%60;
  document.getElementById('timer').innerText=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
+
+setInterval(updateTimer,1000);
+loadData();
+updateTimer();
 </script>
 </body>
- </html>
+</html>
