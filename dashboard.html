@@ -31,11 +31,11 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <div class="navbar">
 <div class="logo">👑 JUMBO ROYALTY</div>
 <div class="links">
-<a href="dashboard.html">Dashboard</a>
-<a href="investment.html">Investment</a>
-<a href="tombola.html">Tombola</a>
-<a href="deposit.html">Deposit</a>
-<a href="withdrawals.html" style="color:#FFD700;font-weight:bold;">Withdrawals</a>
+<a href="#" onclick="go('dashboard.html')">Dashboard</a>
+<a href="#" onclick="go('investment.html')">Investment</a>
+<a href="#" onclick="go('tombola.html')">Tombola</a>
+<a href="#" onclick="go('deposit.html')">Deposit</a>
+<a href="#" onclick="go('withdrawals.html')" style="color:#FFD700;font-weight:bold;">Withdrawals</a>
 </div>
 <div class="logout" onclick="logout()">Sohoka</div>
 </div>
@@ -47,7 +47,7 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <p class="balance" id="balance">0 Frw</p>
 <p class="ok" id="investmentStatus">✅ Investment: Nta Active</p>
 <p style="font-size:11px;color:#aaa;">Deposit ya mbere 10k+ = Bonus 1000frw</p>
-<button class="btn" onclick="location.href='investment.html'">Tangira Investment</button>
+<button class="btn" onclick="go('investment.html')">Tangira Investment</button>
 </div>
 <div class="card">
 <h3>📤 Kohereza Deposit</h3>
@@ -84,7 +84,7 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <p style="font-size:12px;">Min: 1000 Frw | Cut: 8%</p>
 <input type="number" id="withdrawAmount" placeholder="Andika Amafaranga" oninput="calcFee()">
 <p class="locked">Uzabona: <span id="receiveAmount">0</span> Frw | Katwa: <span id="feeAmount">0</span> Frw</p>
-<button class="btn" onclick="location.href='withdrawals.html'">JYA KURI WITHDRAWALS →</button>
+<button class="btn" onclick="go('withdrawals.html')">JYA KURI WITHDRAWALS →</button>
 <p style="font-size:11px;color:#888;margin-top:5px;">Uzuzuza MoMo + History haho</p>
 </div>
 <div class="card" style="grid-column:1 / -1;">
@@ -105,46 +105,48 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
+
+// FATA PHONE MURI URL - NTA LOCALSTORAGE
+const urlParams = new URLSearchParams(window.location.search);
+let USER_PHONE = urlParams.get('phone');
+let USER_NAME = "";
+
 function checkLogin(){
- if(!currentUser||!currentUser.phone){ location.href='index.html'; return; }
- document.getElementById('username').innerText=currentUser.names||currentUser.phone;
- loadUserData(); generateRefLink(currentUser.phone);
- if(localStorage.getItem('ads_start')){ startAdsTimer(); }
+ if(!USER_PHONE){ location.href='index.html'; return; }
+ loadUserData();
+ generateRefLink(USER_PHONE);
 }
+
 async function loadUserData(){
  try{
-  let bal=0, refBal=0, invStatus='Nta Active';
-  // Gerageza wallets, niba ntayo gerageza profiles, niba ntayo gerageza users
-  const {data:w} = await supabaseClient.from('wallets').select('*').eq('phone',currentUser.phone).maybeSingle();
-  if(w){ bal=w.balance||0; refBal=w.referral_balance||0; invStatus=w.investment_status||invStatus; }
-  else {
-    const {data:p} = await supabaseClient.from('profiles').select('*').eq('phone',currentUser.phone).maybeSingle();
-    if(p){ bal=p.balance||0; refBal=p.referral_balance||0; invStatus=p.investment_status||invStatus; }
-    else {
-      const {data:u} = await supabaseClient.from('users').select('*').eq('phone',currentUser.phone).maybeSingle();
-      if(u){ bal=u.balance||0; refBal=u.referral_balance||0; invStatus=u.investment_status||invStatus; }
-    }
-  }
-  document.getElementById('balance').innerText=bal.toLocaleString()+' Frw';
-  document.getElementById('refBalance').innerText=refBal.toLocaleString()+' Frw';
-  document.getElementById('investmentStatus').innerText='✅ '+invStatus;
- }catch(e){ console.log('loadUserData error:', e.message); }
+  const {data:p, error} = await supabaseClient.from('profiles').select('*').eq('phone', USER_PHONE).maybeSingle();
+  if(error) throw error;
+  if(!p){ alert("User not found"); location.href='index.html'; return; }
+  USER_NAME = p.names;
+  document.getElementById('username').innerText = p.names || p.phone;
+  document.getElementById('balance').innerText = (p.balance||0).toLocaleString()+' Frw';
+  document.getElementById('refBalance').innerText = (p.referral_balance||0).toLocaleString()+' Frw';
+  document.getElementById('investmentStatus').innerText = '✅ '+(p.investment_status||'inactive');
+ }catch(e){ console.log(e.message); }
 }
+
+function go(page){ location.href = page + "?phone=" + encodeURIComponent(USER_PHONE); }
+
 async function sendDeposit(){
  let a=document.getElementById('amount').value,m=document.getElementById('method').value,t=document.getElementById('tef').value;
  if(!a||!t||m=='Hitamo Uburyo') return alert('Uzuza byose!');
  const {error}=await supabaseClient.from('deposits').insert([{
-   phone:currentUser.phone,
+   phone:USER_PHONE,
    amount:parseInt(a),
    method:m,
    tef:t,
    transaction_id:t,
    status:'pending',
-   names:currentUser.names||currentUser.phone
+   names:USER_NAME
  }]);
- if(error) alert(error.message); else { alert('✅ Deposit yoherejwe! Tegereza Admin.'); document.getElementById('amount').value=''; document.getElementById('tef').value=''; }
+ if(error) alert(error.message); else { alert('✅ Deposit yoherejwe!'); document.getElementById('amount').value=''; document.getElementById('tef').value=''; }
 }
+
 function generateRefLink(phone){ 
   let baseUrl = 'https://jumbo-omega.vercel.app';
   document.getElementById('refLink').innerText = `${baseUrl}/?ref=${phone}`;
@@ -152,56 +154,53 @@ function generateRefLink(phone){
 function copyRef(){ navigator.clipboard.writeText(document.getElementById('refLink').innerText); alert('Link ikoporowe!'); }
 function calcFee(){ let amt=parseInt(document.getElementById('withdrawAmount').value||0); let fee=Math.floor(amt*0.08); document.getElementById('feeAmount').innerText=fee; document.getElementById('receiveAmount').innerText=amt-fee; }
 function claimBonus(){ alert('Bonus ya 1000frw - izaboneka nyuma ya deposit ya mbere 10k+'); }
+
 async function loadHistory(type){
  let box=document.getElementById('historyBox'); box.innerHTML='Loading...';
  try{
-  const {data}=await supabaseClient.from(type).select('*').eq('phone',currentUser.phone).order('created_at',{ascending:false}).limit(20);
+  const {data}=await supabaseClient.from(type).select('*').eq('phone', USER_PHONE).order('created_at',{ascending:false}).limit(20);
   if(!data||data.length==0){ box.innerHTML=`<p style='color:#666;'>Nta ${type} iraboneka</p>`; return; }
   let html=''; data.forEach(d=>{ html+=`<div class="history-item"><span>${type}: ${d.amount||''} ${d.type||''} - <b>${d.status||'pending'}</b></span><span style="color:#888;">${new Date(d.created_at).toLocaleDateString()}</span></div>`; });
   box.innerHTML=html;
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
-function logout(){ localStorage.removeItem('jumbo_user'); location.href='index.html'; }
+
+function logout(){ location.href='index.html'; }
+
+let adsInterval=null;
+let adsStart=0;
 function startAdsTimer(){
-  if(!localStorage.getItem('ads_start')){ localStorage.setItem('ads_start', Date.now()); }
-  let interval = setInterval(()=>{
-    let start = parseInt(localStorage.getItem('ads_start')||0);
-    let diff = Date.now() - start;
-    let remaining = 120000 - diff;
-    let timerEl = document.getElementById('adsTimer');
-    let btnEl = document.getElementById('claimAdsBtn');
-    if(!timerEl) { clearInterval(interval); return; }
-    if(remaining <= 0){
-      clearInterval(interval);
-      timerEl.innerText = "✅ Wujuje iminota 2! Kanda CLAIM";
-      btnEl.style.display = "block";
+  if(adsStart===0) adsStart=Date.now();
+  if(adsInterval) clearInterval(adsInterval);
+  adsInterval=setInterval(()=>{
+    let diff=Date.now()-adsStart;
+    let remaining=120000-diff;
+    let timerEl=document.getElementById('adsTimer');
+    let btnEl=document.getElementById('claimAdsBtn');
+    if(remaining<=0){
+      clearInterval(adsInterval);
+      timerEl.innerText="✅ Wujuje iminota 2! Kanda CLAIM";
+      btnEl.style.display="block";
     } else {
-      let sec = Math.floor(remaining/1000);
-      timerEl.innerText = `⏳ Hasigaye ${sec} sec... Soma amabwiriza muri group`;
+      let sec=Math.floor(remaining/1000);
+      timerEl.innerText=`⏳ Hasigaye ${sec} sec... Soma amabwiriza`;
     }
-  }, 1000);
+  },1000);
 }
+
 async function claimAds(){
   try{
-    let newBal=0; let found=false;
-    const {data:w} = await supabaseClient.from('wallets').select('balance').eq('phone',currentUser.phone).maybeSingle();
-    if(w){ newBal=(w.balance||0)+70; await supabaseClient.from('wallets').update({balance:newBal}).eq('phone',currentUser.phone); found=true; }
-    if(!found){
-      const {data:p} = await supabaseClient.from('profiles').select('balance').eq('phone',currentUser.phone).maybeSingle();
-      if(p){ newBal=(p.balance||0)+70; await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',currentUser.phone); found=true; }
-    }
-    if(!found){
-      const {data:u} = await supabaseClient.from('users').select('balance').eq('phone',currentUser.phone).maybeSingle();
-      if(u){ newBal=(u.balance||0)+70; await supabaseClient.from('users').update({balance:newBal}).eq('phone',currentUser.phone); }
-    }
-    alert("✅ Wabonye 70frw muri wallet!");
-    localStorage.removeItem('ads_start');
+    const {data:p}=await supabaseClient.from('profiles').select('balance').eq('phone', USER_PHONE).maybeSingle();
+    let newBal=(p.balance||0)+70;
+    await supabaseClient.from('profiles').update({balance:newBal}).eq('phone', USER_PHONE);
+    alert("✅ Wabonye 70frw!");
     document.getElementById('claimAdsBtn').style.display="none";
     document.getElementById('adsTimer').innerText="";
+    adsStart=0;
     loadUserData();
   }catch(e){ alert(e.message); }
 }
 checkLogin();
 </script>
 </body>
- </html>
+</html>
