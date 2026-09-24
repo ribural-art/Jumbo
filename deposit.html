@@ -28,12 +28,12 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 </head>
 <body>
 <div class="header">
-<a href="investment.html">⬅ Gusubira Inyuma</a>
+<a href="#" id="backLink">⬅ Gusubira Inyuma</a>
 📤 Kohereza Deposit
 </div>
 <div class="container">
 <div class="card">
-<h3 id="planTitle">Uragura: KING - 50,000 Frw</h3>
+<h3 id="planTitle">Kohereza Deposit</h3>
 <div class="payment-box">
 <p>KWISHYURA</p>
 <p>Code ya Merchant:</p>
@@ -57,7 +57,7 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 <input type="text" id="txid" placeholder="Andika Transaction ID / Ref" required>
 <div class="example">
 <b>Urugero:</b> Ref: 123456789ABC <br>
-Iyo nomboro uyisanga muri SMS wagenewe
+Iyo number uyisanga muri SMS wagenewe
 </div>
 <input type="number" id="amountInput" placeholder="Andika Amafaranga wabitse" required>
 <button class="btn" id="submitBtn" onclick="submitDeposit()">Ohereza Kuri Admin</button>
@@ -69,15 +69,28 @@ Iyo nomboro uyisanga muri SMS wagenewe
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=JSON.parse(localStorage.getItem('jumbo_user')||'null');
-if(!currentUser) location.href='index.html';
+
+// FATA PHONE MURI URL - ABAVANDIMWE NIZINDI
 const urlParams = new URLSearchParams(window.location.search);
+let USER_PHONE = urlParams.get('phone');
+let USER_NAME = "";
 const plan = urlParams.get('plan');
 const amount = urlParams.get('amount');
+
+if(!USER_PHONE){ location.href='index.html'; }
+document.getElementById('backLink').href = "dashboard.html?phone="+encodeURIComponent(USER_PHONE);
+
 if(plan && amount){
  document.getElementById("planTitle").innerText = `Uragura: ${plan} - ${amount} Frw`;
  document.getElementById("amountInput").value = amount;
 }
+
+async function loadUser(){
+ const {data}=await supabaseClient.from('profiles').select('names').eq('phone', USER_PHONE).maybeSingle();
+ if(data) USER_NAME=data.names;
+}
+loadUser();
+
 async function submitDeposit(){
  let method=document.getElementById('method').value;
  let txid=document.getElementById('txid').value.trim();
@@ -90,26 +103,24 @@ async function submitDeposit(){
  btn.disabled=true; btn.innerText='Turimo kohereza...'; msg.innerText='';
  try{
   const {error}=await supabaseClient.from('deposits').insert([{
-   user_id: currentUser.id,
-   phone: currentUser.phone || currentUser.tel || '',
+   phone: USER_PHONE,
+   names: USER_NAME,
    amount: amt,
    method: method,
    transaction_id: txid,
-   reference: txid,
    status: 'pending'
   }]);
   if(error) throw error;
   msg.style.color='#00FF00';
   msg.innerText='✅ Deposit yoherejwe! Admin azayemeza vuba.';
-  alert('✅ Deposit yoherejwe neza!\n\nTegereza Admin ayemeze muri 5 min.\n\nUzabona 1000 Frw bonus + Investment itangire.');
-  setTimeout(()=>{ location.href='dashboard.html'; },1500);
+  alert('✅ Deposit yoherejwe!\nTegereza Admin 5 min.');
+  setTimeout(()=>{ location.href='dashboard.html?phone='+encodeURIComponent(USER_PHONE); },1500);
  }catch(e){
   btn.disabled=false; btn.innerText='Ohereza Kuri Admin';
   msg.style.color='#FF4444';
   msg.innerText='Error: '+e.message;
-  alert('Error: '+e.message);
  }
 }
 </script>
 </body>
- </html>
+</html>
