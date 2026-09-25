@@ -19,7 +19,6 @@ body{background:#000;color:#fff;padding:15px;}
 .progress{background:#222;border-radius:10px;height:22px;margin:10px 0;overflow:hidden;}
 .progress-bar{height:100%;background:linear-gradient(90deg,#00FF00,#00AA00);text-align:center;color:#000;font-weight:bold;line-height:22px;transition:0.5s;}
 .btn-buy{background:#00FF00;color:#000;padding:14px;border:none;border-radius:10px;font-weight:bold;width:100%;font-size:16px;cursor:pointer;}
-.note{color:#FFA500;font-size:11px;text-align:center;margin-top:8px;}
 .navbar{background:#111;padding:12px 20px;border-bottom:2px solid #FFD700;display:flex;justify-content:space-between;margin:-15px -15px 15px -15px;}
 .navbar a{color:#fff;text-decoration:none;margin:0 8px;font-size:12px;}
 </style>
@@ -45,10 +44,8 @@ body{background:#000;color:#fff;padding:15px;}
 <div class="level">
 <h2>🏆 LEV 1</h2>
 <p class="prize">300 Frw → Utsindira 10,000 Frw</p>
-<div class="info"><span>Target:</span> <b>334 Tickets</b></div>
 <div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev1MyMoney">0 Frw</b></div>
 <div class="info missing"><span>Ibura:</span> <b id="lev1Missing">334</b></div>
-<div class="info"><span>Abaguzi Bose:</span> <b id="lev1Users">0 / 334</b></div>
 <div class="progress"><div class="progress-bar" id="lev1Bar">0%</div></div>
 <button class="btn-buy" onclick="buyTicket(1)">GURA TICKET - 300 Frw</button>
 </div>
@@ -56,10 +53,8 @@ body{background:#000;color:#fff;padding:15px;}
 <div class="level">
 <h2>👑 LEV 2</h2>
 <p class="prize">500 Frw → Utsindira 15,000 Frw</p>
-<div class="info"><span>Target:</span> <b>300 Tickets</b></div>
 <div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev2MyMoney">0 Frw</b></div>
 <div class="info missing"><span>Ibura:</span> <b id="lev2Missing">300</b></div>
-<div class="info"><span>Abaguzi Bose:</span> <b id="lev2Users">0 / 300</b></div>
 <div class="progress"><div class="progress-bar" id="lev2Bar">0%</div></div>
 <button class="btn-buy" onclick="buyTicket(2)">GURA TICKET - 500 Frw</button>
 </div>
@@ -67,10 +62,8 @@ body{background:#000;color:#fff;padding:15px;}
 <div class="level">
 <h2>💎 LEV 3</h2>
 <p class="prize">1000 Frw → Utsindira 20,000 Frw</p>
-<div class="info"><span>Target:</span> <b>200 Tickets</b></div>
 <div class="info myMoney"><span>Amafaranga yawe:</span> <b id="lev3MyMoney">0 Frw</b></div>
 <div class="info missing"><span>Ibura:</span> <b id="lev3Missing">200</b></div>
-<div class="info"><span>Abaguzi Bose:</span> <b id="lev3Users">0 / 200</b></div>
 <div class="progress"><div class="progress-bar" id="lev3Bar">0%</div></div>
 <button class="btn-buy" onclick="buyTicket(3)">GURA TICKET - 1000 Frw</button>
 </div>
@@ -114,7 +107,6 @@ async function loadData(){
    let got=counts[i]; let target=CONFIG[i].target;
    let missing=Math.max(0,target-got);
    let percent=Math.min(100,(got/target)*100).toFixed(1);
-   document.getElementById('lev'+i+'Users').innerText=got+' / '+target;
    document.getElementById('lev'+i+'Missing').innerText=missing;
    document.getElementById('lev'+i+'MyMoney').innerText=my[i].toLocaleString()+' Frw';
    document.getElementById('lev'+i+'Bar').style.width=percent+'%';
@@ -156,4 +148,4 @@ loadData();
 updateTimer();
 </script>
 </body>
-</html>
+                                                     </html>
