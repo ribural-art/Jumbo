@@ -46,7 +46,6 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <h3>💰 Amafaranga Yanjye (Wallet)</h3>
 <p class="balance" id="balance">0 Frw</p>
 <p class="ok" id="investmentStatus">✅ Investment: Nta Active</p>
-<p style="font-size:11px;color:#aaa;">Deposit ya mbere 10k+ = Bonus 1000frw</p>
 <button class="btn" onclick="go('investment.html')">Tangira Investment</button>
 </div>
 <div class="card">
@@ -59,11 +58,6 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <p class="ok" style="margin-top:8px;">Admin azemeza muminota 5</p>
 </div>
 <div class="card">
-<h3>🎁 Welcome Bonus</h3>
-<p>Status: <span class="ok">1000frw Iraboneka</span></p>
-<button class="btn" onclick="claimBonus()">Kubikuza 1000frw</button>
-</div>
-<div class="card">
 <h3>👥 Referral Bonus</h3>
 <p>Lev1: <b style="color:#00FF00;">10%</b> | Lev2: 2% | Lev3: 1%</p>
 <p class="locked">Amafaranga: <span id="refBalance">0 Frw</span></p>
@@ -74,8 +68,7 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <div class="card" style="border-color:#00FF00;">
 <h3>📢 AKAZI KA ADS - 70frw</h3>
 <p style="font-size:12px;">Injira muri group usome amabwiriza iminota 2 uhembwe</p>
-<a href="https://chat.whatsapp.com/FGtIDTpV7I7IaYFm4Ygebn" target="_blank" class="btn" style="background:#25D366;color:#000;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer()">JOIN WHATSAPP GROUP</a>
-<a href="https://t.me/riyaltygh" target="_blank" class="btn" style="background:#0088cc;color:white;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer()">JOIN TELEGRAM GROUP</a>
+<a href="https://chat.whatsapp.com/HTi8rrw6kLG9Q7uYyp66EC" target="_blank" class="btn" style="background:#25D366;color:#000;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer()">JOIN WHATSAPP GROUP</a>
 <p id="adsTimer" style="color:#FFD700;margin-top:10px;font-weight:bold;text-align:center;"></p>
 <button class="btn" id="claimAdsBtn" style="display:none;background:#00FF00;color:#000;" onclick="claimAds()">CLAIM 70frw →</button>
 </div>
@@ -105,18 +98,14 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-// FATA PHONE MURI URL - NTA LOCALSTORAGE
 const urlParams = new URLSearchParams(window.location.search);
 let USER_PHONE = urlParams.get('phone');
 let USER_NAME = "";
-
 function checkLogin(){
  if(!USER_PHONE){ location.href='index.html'; return; }
  loadUserData();
  generateRefLink(USER_PHONE);
 }
-
 async function loadUserData(){
  try{
   const {data:p, error} = await supabaseClient.from('profiles').select('*').eq('phone', USER_PHONE).maybeSingle();
@@ -129,9 +118,7 @@ async function loadUserData(){
   document.getElementById('investmentStatus').innerText = '✅ '+(p.investment_status||'inactive');
  }catch(e){ console.log(e.message); }
 }
-
 function go(page){ location.href = page + "?phone=" + encodeURIComponent(USER_PHONE); }
-
 async function sendDeposit(){
  let a=document.getElementById('amount').value,m=document.getElementById('method').value,t=document.getElementById('tef').value;
  if(!a||!t||m=='Hitamo Uburyo') return alert('Uzuza byose!');
@@ -146,15 +133,12 @@ async function sendDeposit(){
  }]);
  if(error) alert(error.message); else { alert('✅ Deposit yoherejwe!'); document.getElementById('amount').value=''; document.getElementById('tef').value=''; }
 }
-
 function generateRefLink(phone){ 
   let baseUrl = 'https://jumbo-omega.vercel.app';
   document.getElementById('refLink').innerText = `${baseUrl}/?ref=${phone}`;
 }
 function copyRef(){ navigator.clipboard.writeText(document.getElementById('refLink').innerText); alert('Link ikoporowe!'); }
 function calcFee(){ let amt=parseInt(document.getElementById('withdrawAmount').value||0); let fee=Math.floor(amt*0.08); document.getElementById('feeAmount').innerText=fee; document.getElementById('receiveAmount').innerText=amt-fee; }
-function claimBonus(){ alert('Bonus ya 1000frw - izaboneka nyuma ya deposit ya mbere 10k+'); }
-
 async function loadHistory(type){
  let box=document.getElementById('historyBox'); box.innerHTML='Loading...';
  try{
@@ -164,9 +148,7 @@ async function loadHistory(type){
   box.innerHTML=html;
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
-
 function logout(){ location.href='index.html'; }
-
 let adsInterval=null;
 let adsStart=0;
 function startAdsTimer(){
@@ -187,7 +169,6 @@ function startAdsTimer(){
     }
   },1000);
 }
-
 async function claimAds(){
   try{
     const {data:p}=await supabaseClient.from('profiles').select('balance').eq('phone', USER_PHONE).maybeSingle();
@@ -203,4 +184,4 @@ async function claimAds(){
 checkLogin();
 </script>
 </body>
-</html>
+ </html>
