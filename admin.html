@@ -108,13 +108,19 @@ const TOMBOLA_CFG={1:{price:300,target:334,prize:10000,need:100200},2:{price:500
 function login(){
  let p=document.getElementById('password').value.trim();
  if(p==ADMIN_PASS){
+  localStorage.setItem('admin_logged','yes');
   document.getElementById('loginPage').style.display='none';
   document.getElementById('adminPage').style.display='block';
+  document.getElementById('error').style.display='none';
   loadAll();
  } else document.getElementById('error').style.display='block';
 }
-function logout(){ document.getElementById('loginPage').style.display='flex'; document.getElementById('adminPage').style.display='none'; document.getElementById('password').value=''; }
-
+function logout(){
+ localStorage.removeItem('admin_logged');
+ document.getElementById('loginPage').style.display='flex';
+ document.getElementById('adminPage').style.display='none';
+ document.getElementById('password').value='';
+}
 function changeAdminPass(){
  let oldP=document.getElementById('oldPass').value.trim();
  let np=document.getElementById('newAdminPass').value.trim();
@@ -131,7 +137,6 @@ function resetToDefault(){
  localStorage.setItem('admin_pass','Jumbo@2026'); ADMIN_PASS='Jumbo@2026';
  alert('🔄 Yagaruwe');
 }
-
 function showTab(tab,el){
  ['depositTab','withdrawTab','tombolaTab','usersTab'].forEach(id=>document.getElementById(id).style.display='none');
  document.getElementById(tab+'Tab').style.display='block';
@@ -141,40 +146,33 @@ function showTab(tab,el){
  if(tab=='tombola') loadTombola();
  if(tab=='users') loadUsers();
 }
-
 async function loadAll(){
  try{
   const {data:users}=await supabaseClient.from('profiles').select('*');
   const {data:deposits}=await supabaseClient.from('deposits').select('*');
   const {data:withdraws}=await supabaseClient.from('withdrawals').select('*');
   const {data:tickets}=await supabaseClient.from('tombola').select('*');
-
   document.getElementById('totalUsers').innerText=users?users.length:0;
   let today = new Date().toISOString().split('T')[0];
   let todayUsers = users? users.filter(u=> u.created_at && u.created_at.startsWith(today)).length:0;
   document.getElementById('usersToday').innerText='+'+todayUsers+' uyu munsi';
-
   let totalDep = deposits? deposits.filter(d=>d.status=='approved').reduce((s,d)=>s+(d.amount||0),0) : 0;
   let pendingDep = deposits? deposits.filter(d=>d.status=='pending').length : 0;
   document.getElementById('totalDeposit').innerText=totalDep.toLocaleString()+' Frw';
   document.getElementById('depositPendingCount').innerText='Pending: '+pendingDep+' | Yose: '+ (deposits?deposits.length:0);
-
   let totalWith = withdraws? withdraws.filter(w=>w.status=='approved').reduce((s,w)=>s+(w.amount||0),0) : 0;
   let pendingWith = withdraws? withdraws.filter(w=>w.status=='pending').length : 0;
   document.getElementById('totalWithdraw').innerText=totalWith.toLocaleString()+' Frw';
   document.getElementById('withdrawPendingCount').innerText='Pending: '+pendingWith+' | Yose: '+(withdraws?withdraws.length:0);
-
   let todayDep = deposits? deposits.filter(d=> d.created_at && d.created_at.startsWith(today)).reduce((s,d)=>s+(d.amount||0),0) : 0;
   let todayTickets = tickets? tickets.filter(t=> t.created_at && t.created_at.startsWith(today)).length : 0;
   document.getElementById('dailyIncome').innerText=todayDep.toLocaleString()+' Frw';
   document.getElementById('dailyTickets').innerText='Tickets uyu munsi: '+todayTickets;
-
   let jackpot = tickets? tickets.reduce((s,t)=>s+(t.amount||t.price||0),0):0;
   document.getElementById('jackpot').innerText=jackpot.toLocaleString()+' Frw';
   loadDeposits();
  }catch(e){ alert('Error: '+e.message); }
 }
-
 async function loadDeposits(){
  let box=document.getElementById('depositTab'); box.innerHTML='<p style="text-align:center;padding:20px;color:#888;">Loading...</p>';
  const {data}=await supabaseClient.from('deposits').select('*').order('created_at',{ascending:false}).limit(100);
@@ -188,17 +186,32 @@ async function loadDeposits(){
  });
  box.innerHTML=html;
 }
-
 async function approveDeposit(id,phone,amount){
- const {data:profile}=await supabaseClient.from('profiles').select('balance').eq('phone',phone).maybeSingle();
- let newBal = (profile?.balance||0)+amount;
- await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',phone);
- await supabaseClient.from('deposits').update({status:'approved'}).eq('id',id);
- alert(`✅ ${amount} Frw yemejwe kuri ${phone}`);
- loadAll();
+ try{
+  const {data:profile}=await supabaseClient.from('profiles').select('*').eq('phone',phone).maybeSingle();
+  if(!profile) return alert('❌ User '+phone+' ntabashwe');
+  let bonus = 0;
+  let already = profile.has_deposited || profile.welcome_bonus_given || false;
+  if(!already && amount >= 10000){
+    bonus = 1000;
+  }
+  let newBal = (profile.balance||0) + amount + bonus;
+  // Try update with flags, fallback to balance only if columns missing
+  let upd = await supabaseClient.from('profiles').update({balance:newBal, has_deposited:true, welcome_bonus_given:true}).eq('phone',phone);
+  if(upd.error){
+    await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',phone);
+  }
+  await supabaseClient.from('deposits').update({status:'approved'}).eq('id',id);
+  if(bonus>0){
+    alert(`✅ ${amount} Frw + 🎁 Bonus ${bonus} Frw = ${newBal} Frw kuri ${phone}`);
+  } else {
+    alert(`✅ ${amount} Frw yemejwe kuri ${phone}`);
+  }
+  loadAll();
+  loadDeposits();
+ }catch(e){ alert('Error: '+e.message); }
 }
 async function rejectDeposit(id){ await supabaseClient.from('deposits').update({status:'rejected'}).eq('id',id); loadAll(); }
-
 async function loadWithdraws(){
  let box=document.getElementById('withdrawTab'); box.innerHTML='<p style="text-align:center;padding:20px;">Loading...</p>';
  const {data}=await supabaseClient.from('withdrawals').select('*').order('created_at',{ascending:false}).limit(100);
@@ -213,7 +226,6 @@ async function loadWithdraws(){
 }
 async function approveWithdraw(id){ await supabaseClient.from('withdrawals').update({status:'approved'}).eq('id',id); loadAll(); loadWithdraws(); }
 async function rejectWithdraw(id){ await supabaseClient.from('withdrawals').update({status:'rejected'}).eq('id',id); loadAll(); loadWithdraws(); }
-
 async function loadTombola(){
  const {data:tickets}=await supabaseClient.from('tombola').select('*');
  let counts={1:0,2:0,3:0}; let totals={1:0,2:0,3:0};
@@ -224,7 +236,6 @@ async function loadTombola(){
    document.getElementById('lev'+lev+'Jackpot').innerText = totals[lev].toLocaleString()+' Frw | Profit '+(totals[lev]-5*cfg.prize).toLocaleString();
  }
 }
-
 async function doDraw(level){
  const {data:tickets}=await supabaseClient.from('tombola').select('*').eq('level',level);
  let cfg=TOMBOLA_CFG[level];
@@ -236,14 +247,12 @@ async function doDraw(level){
  winners.forEach((w,i)=>{ html+=`<div class="card" style="background:#002200;"><p><b>#${i+1} ${w.phone}</b></p><button class="btn-approve" style="width:100%" onclick="givePrize('${w.phone}',${cfg.prize})">EMEZA ${cfg.prize}frw</button></div>`; });
  document.getElementById('winners'+level).innerHTML=html;
 }
-
 async function givePrize(phone,prize){
  const {data:p}=await supabaseClient.from('profiles').select('balance').eq('phone',phone).maybeSingle();
  let newBal=(p?.balance||0)+prize;
  await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',phone);
  alert(`✅ ${phone} ahawe ${prize}`);
 }
-
 async function loadUsers(){
  let box=document.getElementById('usersList'); box.innerHTML='Loading...';
  const {data:users}=await supabaseClient.from('profiles').select('*').order('created_at',{ascending:false}).limit(200);
@@ -254,12 +263,19 @@ async function loadUsers(){
  });
  box.innerHTML=html;
 }
-
 async function deleteUser(id,phone){
  if(!confirm(`Siba ${phone}?`)) return;
  await supabaseClient.from('profiles').delete().eq('id',id);
  alert('🗑️ '+phone+' Yasibwe!'); loadUsers(); loadAll();
 }
+// AUTO-LOGIN - ntibangamira Supabase, ni localStorage gusa
+window.addEventListener('DOMContentLoaded',()=>{
+ if(localStorage.getItem('admin_logged')=='yes'){
+   document.getElementById('loginPage').style.display='none';
+   document.getElementById('adminPage').style.display='block';
+   loadAll();
+ }
+});
 </script>
 </body>
-</html>
+ </html>
