@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUMBO - Team</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#0a0a0a;color:#fff;}
+.navbar{background:#111;padding:15px 20px;border-bottom:2px solid #FFD700;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.logo{color:#FFD700;font-weight:bold;font-size:18px;}
+.links a{color:#fff;text-decoration:none;margin:0 8px;font-size:12px;}.links a.active{color:#FFD700;font-weight:bold;}
+.logout{color:#ff4444;cursor:pointer;font-size:13px;}
+.header{background:linear-gradient(90deg,#FFD700,#FFA500);padding:18px;color:#000;font-weight:bold;font-size:18px;text-align:center;}
+.container{padding:15px;max-width:900px;margin:auto;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px;}
+.stat-card{background:#1a1a1a;border:1px solid #FFD700;padding:15px;border-radius:12px;text-align:center;}
+.stat-card h4{color:#aaa;font-size:10px;}.stat-card p{color:#FFD700;font-size:18px;font-weight:bold;margin-top:5px;}
+.stat-card small{color:#00FF00;font-size:9px;display:block;margin-top:3px;}
+.card{background:#1a1a1a;border-left:4px solid #FFD700;border-radius:12px;padding:15px;margin:10px 0;}
+.card.lev1{border-left-color:#00FF00;}.card.lev2{border-left-color:#0088FF;}.card.lev3{border-left-color:#FF00FF;}
+.ref-link{background:#222;padding:12px;border-radius:8px;border:1px dashed #FFD700;margin:15px 0;text-align:center;word-break:break-all;font-size:12px;}
+.btn{background:#FFD700;color:#000;padding:12px;border:none;border-radius:8px;font-weight:bold;width:100%;cursor:pointer;margin-top:8px;}
+.btn-copy{background:#00FF00;color:#000;}
+.tabs{display:flex;gap:8px;margin:15px 0;}
+.tab{background:#222;padding:8px 12px;border-radius:8px;cursor:pointer;border:1px solid #333;font-size:11px;}
+.tab.active{background:#FFD700;color:#000;font-weight:bold;}
+.user-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #333;font-size:12px;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="navbar">
+<div class="logo">👑 JUMBO</div>
+<div class="links">
+<a href="#" onclick="go('dashboard.html')">Dashboard</a>
+<a href="#" onclick="go('investment.html')">Invest</a>
+<a href="#" onclick="go('tombola.html')">Tombola</a>
+<a href="#" onclick="go('team.html')" class="active">Team</a>
+<a href="#" onclick="go('withdrawals.html')">Withdraw</a>
+</div>
+<div class="logout" onclick="logout()">Sohoka</div>
+</div>
+<div class="header">👥 TEAM YANJYE - LEV 10%/2%/1%</div>
+<div class="container">
+
+<div class="card">
+<h3 style="color:#FFD700;text-align:center;margin-bottom:10px;">🔗 Link Yanjye Yo Gutumira</h3>
+<div class="ref-link" id="refLink">Loading...</div>
+<button class="btn btn-copy" onclick="copyLink()">📋 COPY LINK</button>
+<p style="text-align:center;font-size:11px;color:#aaa;margin-top:8px;">Sangiza link - Ubone 10% / 2% / 1% INSTANT!</p>
+</div>
+
+<div class="stats">
+<div class="stat-card"><h4>LEV 1 (10%)</h4><p id="lev1Count">0</p><small id="lev1Bonus">0 Frw</small></div>
+<div class="stat-card"><h4>LEV 2 (2%)</h4><p id="lev2Count">0</p><small id="lev2Bonus">0 Frw</small></div>
+<div class="stat-card"><h4>LEV 3 (1%)</h4><p id="lev3Count">0</p><small id="lev3Bonus">0 Frw</small></div>
+</div>
+
+<div class="card" style="background:linear-gradient(90deg,#FFD700,#FFA500);color:#000;text-align:center;">
+<h4 style="color:#000;">💰 TOTAL TEAM BONUS</h4>
+<p style="font-size:28px;font-weight:900;color:#000;" id="totalBonus">0 Frw</p>
+<small style="color:#000;">Bose hamwe wabonye</small>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showLev(1,this)">LEV 1</div>
+<div class="tab" onclick="showLev(2,this)">LEV 2</div>
+<div class="tab" onclick="showLev(3,this)">LEV 3</div>
+</div>
+
+<div id="lev1Box"></div>
+<div id="lev2Box" style="display:none;"></div>
+<div id="lev3Box" style="display:none;"></div>
+
+</div>
+<script>
+const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let USER_PHONE = new URLSearchParams(window.location.search).get('phone');
+if(!USER_PHONE) location.href='index.html';
+function go(p){ location.href=p+"?phone="+encodeURIComponent(USER_PHONE); }
+function logout(){ location.href='index.html'; }
+
+let REF_LINK = window.location.origin + "/?ref=" + encodeURIComponent(USER_PHONE);
+document.getElementById('refLink').innerText = REF_LINK;
+function copyLink(){
+  navigator.clipboard.writeText(REF_LINK);
+  alert('✅ Link Copy!');
+}
+
+let LEV_DATA = {1:[],2:[],3:[]};
+
+async function loadTeam(){
+ try{
+  // LEV1 - abo watumiye direct
+  const {data:lev1} = await supabaseClient.from('profiles').select('phone,names,balance,created_at').eq('referred_by', USER_PHONE);
+  LEV_DATA[1] = lev1 || [];
+  document.getElementById('lev1Count').innerText = LEV_DATA[1].length;
+
+  // LEV2 - abo LEV1 batumiye
+  let lev2 = [];
+  for(let u of LEV_DATA[1]){
+    const {data} = await supabaseClient.from('profiles').select('phone,names,balance,created_at').eq('referred_by', u.phone);
+    if(data) lev2 = lev2.concat(data);
+  }
+  LEV_DATA[2] = lev2;
+  document.getElementById('lev2Count').innerText = lev2.length;
+
+  // LEV3
+  let lev3 = [];
+  for(let u of lev2){
+    const {data} = await supabaseClient.from('profiles').select('phone,names,balance,created_at').eq('referred_by', u.phone);
+    if(data) lev3 = lev3.concat(data);
+  }
+  LEV_DATA[3] = lev3;
+  document.getElementById('lev3Count').innerText = lev3.length;
+
+  // Bonus - shaka muri referrals niba ihari, niba idahari kora estimate
+  try{
+    const {data:refs} = await supabaseClient.from('referrals').select('*').eq('referrer', USER_PHONE);
+    if(refs && refs.length>0){
+      let b1=0,b2=0,b3=0;
+      refs.forEach(r=>{
+        if(r.level==1) b1+=r.bonus||0;
+        if(r.level==2) b2+=r.bonus||0;
+        if(r.level==3) b3+=r.bonus||0;
+      });
+      document.getElementById('lev1Bonus').innerText = b1.toLocaleString()+' Frw';
+      document.getElementById('lev2Bonus').innerText = b2.toLocaleString()+' Frw';
+      document.getElementById('lev3Bonus').innerText = b3.toLocaleString()+' Frw';
+      document.getElementById('totalBonus').innerText = (b1+b2+b3).toLocaleString()+' Frw';
+    } else {
+      document.getElementById('totalBonus').innerText = 'Bonus INSTANT muri Balance';
+    }
+  }catch(e){}
+
+  renderLev(1);
+ }catch(e){ console.log(e.message); }
+}
+
+function showLev(lev, el){
+  ['lev1Box','lev2Box','lev3Box'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('lev'+lev+'Box').style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderLev(lev);
+}
+
+function renderLev(lev){
+  let box = document.getElementById('lev'+lev+'Box');
+  let data = LEV_DATA[lev];
+  if(!data || data.length==0){
+    box.innerHTML = '<p style="text-align:center;padding:20px;color:#888;">Nta muntu muri LEV '+lev+'</p>';
+    return;
+  }
+  let html = '<div class="card lev'+lev+'"><h4 style="color:#FFD700;margin-bottom:10px;">LEV '+lev+' - Abantu: '+data.length+'</h4>';
+  data.forEach(u=>{
+    html += '<div class="user-item"><span><b>'+(u.names||'User')+'</b><br><small style="color:#888;">'+u.phone+'</small></span><span style="color:#00FF00;">'+(u.balance||0).toLocaleString()+' Frw</span></div>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+loadTeam();
+</script>
+</body>
+</html>
