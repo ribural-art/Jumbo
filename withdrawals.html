@@ -16,6 +16,8 @@ body{background:#0a0a0a;color:#fff;}
 .card{background:#1a1a1a;border:1px solid #FFD700;border-radius:15px;padding:20px;box-shadow:0 0 15px rgba(255,215,0,0.15);margin-bottom:20px;}
 .card h3{color:#FFD700;margin-bottom:15px;text-align:center;}
 .balance{font-size:32px;font-weight:bold;color:#00FF00;text-align:center;margin:10px 0;}
+.countdown-card{background:linear-gradient(90deg,#1a001a,#2a0a2a);border:2px solid #FF00FF;border-radius:12px;padding:15px;margin-bottom:15px;text-align:center;}
+.countdown-card h4{color:#FF00FF;font-size:12px;} .countdown-card p{color:#FFD700;font-size:22px;font-weight:bold;margin-top:5px;}
 input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;background:#222;color:#fff;font-size:14px;}
 .btn{background:#FFD700;color:#000;padding:14px 20px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;font-size:15px;}
 .btn2{background:#333;color:#FFD700;padding:12px 20px;border:1px solid #FFD700;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;margin-top:10px;}
@@ -36,15 +38,18 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 </div>
 <div class="logout" onclick="logout()">Sohoka</div>
 </div>
-
 <div class="header">🏦 KUBIKUZA - Withdrawals</div>
-
 <div class="container">
-
 <div class="card">
 <h3>💰 Balance Yanjye</h3>
 <p class="balance" id="balance">0 Frw</p>
 <p class="ok">Min: 1000 Frw | Fee: 8% | Uzabona 92%</p>
+</div>
+
+<div class="countdown-card" id="investCard" style="display:none;">
+<h4>⏰ INVESTMENT COUNTDOWN - DAILY INCOME</h4>
+<p id="countdown">00:00:00</p>
+<small id="investInfo" style="color:#aaa;font-size:11px;">Investment: 0 Frw | Daily: 0 Frw</small>
 </div>
 
 <div class="card">
@@ -56,7 +61,6 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 <button class="btn" onclick="requestWithdraw()">SABA KUBIKUZA NONAHA</button>
 <p class="ok" style="margin-top:10px;">⏱️ Admin azishyura mu minota 30</p>
 </div>
-
 <div class="card">
 <h3>📜 Withdrawals Zanjye</h3>
 <div id="historyBox" style="background:#222;padding:12px;border-radius:8px;max-height:300px;overflow:auto;">
@@ -64,21 +68,17 @@ input,select{width:100%;padding:12px;border-radius:8px;border:none;margin:8px 0;
 </div>
 <button class="btn2" onclick="loadHistory()">🔄 Refresh History</button>
 </div>
-
 </div>
-
 <script>
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
 const urlParams = new URLSearchParams(window.location.search);
 let USER_PHONE = urlParams.get('phone');
 let USER_NAME = "";
 let USER_BALANCE = 0;
-
+let INVEST_DATE = null;
 if(!USER_PHONE){ location.href='index.html'; }
-
 function go(page){ location.href=page+"?phone="+encodeURIComponent(USER_PHONE); }
 function logout(){ location.href='index.html'; }
 
@@ -89,8 +89,40 @@ async function loadUserData(){
   USER_NAME=data.names;
   USER_BALANCE=data.balance||0;
   document.getElementById('balance').innerText=USER_BALANCE.toLocaleString()+' Frw';
+
+  // INVESTMENT COUNTDOWN - NTIBANGAMIYE FILE - SAFE
+  if(data.investment_amount && data.investment_amount > 0){
+    INVEST_DATE = data.last_daily_claim || data.investment_date || data.created_at;
+    let investAmt = data.investment_amount || 0;
+    let dailyRate = data.daily_rate || 0.15; // 15% default
+    let daily = Math.floor(investAmt * dailyRate);
+    document.getElementById('investInfo').innerText = 'Investment: '+investAmt.toLocaleString()+' Frw | Daily: '+daily.toLocaleString()+' Frw | Status: '+(data.investment_status||'active');
+    document.getElementById('investCard').style.display='block';
+    startCountdown();
+  }
  }catch(e){ console.log(e.message); }
  loadHistory();
+}
+
+function startCountdown(){
+ if(!INVEST_DATE) return;
+ let last = new Date(INVEST_DATE).getTime();
+ let next = last + 24*60*60*1000;
+ function update(){
+   let now = new Date().getTime();
+   let diff = next - now;
+   if(diff <= 0){
+     document.getElementById('countdown').innerText = "✅ YAGEZE - BIKUZA UBU!";
+     document.getElementById('countdown').style.color = "#00FF00";
+     return;
+   }
+   let h = Math.floor(diff / (1000*60*60));
+   let m = Math.floor((diff % (1000*60*60)) / (1000*60));
+   let s = Math.floor((diff % (1000*60)) / 1000);
+   document.getElementById('countdown').innerText = h+'h '+m+'m '+s+'s';
+ }
+ update();
+ setInterval(update, 1000);
 }
 
 function calcFee(){
@@ -107,15 +139,10 @@ async function requestWithdraw(){
  let momo=document.getElementById('momoNumber').value;
  if(!amt || amt<1000) return alert('Min ni 1000 Frw!');
  if(!momo) return alert('Andika numero ya MoMo!');
-
- // Check balance muri profiles IMWE
  const {data:profile}=await supabaseClient.from('profiles').select('balance').eq('phone', USER_PHONE).maybeSingle();
  if(!profile || (profile.balance||0) < amt) return alert('Balance ntihagije! Ufite: '+(profile?.balance||0)+' Frw');
-
- // Kura muri profiles
  let newBal = (profile.balance||0) - amt;
  await supabaseClient.from('profiles').update({balance:newBal}).eq('phone', USER_PHONE);
-
  const {error}=await supabaseClient.from('withdrawals').insert([{
    phone: USER_PHONE,
    names: USER_NAME,
@@ -124,9 +151,7 @@ async function requestWithdraw(){
    momo_number: momo,
    status: 'pending'
  }]);
-
  if(error){
-   // Garura balance niba byanze
    await supabaseClient.from('profiles').update({balance:profile.balance}).eq('phone', USER_PHONE);
    alert('Error: '+error.message);
  } else {
@@ -150,8 +175,7 @@ async function loadHistory(){
   box.innerHTML=html;
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
-
 loadUserData();
 </script>
 </body>
-</html>
+ </html>
