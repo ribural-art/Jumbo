@@ -48,7 +48,7 @@ body{background:#0a0a0a;color:#fff;}
 <div class="top-header">
 <div style="font-size:28px;">👑</div>
 <h1 style="font-size:18px;font-weight:900;">JUMBO ROYALTY ADMIN PANEL</h1>
-<p style="font-size:10px;font-weight:bold;">FIXED DELETE ✅</p>
+<p style="font-size:10px;font-weight:bold;">FIXED DELETE ✅ V2</p>
 </div>
 <div class="login-page" id="loginPage">
 <div class="login-box">
@@ -174,14 +174,17 @@ async function loadDeposits(){
  data.forEach(d=>{
   let color = d.status=='pending'?'#FFD700': d.status=='approved'?'#00FF00':'#FF4444';
   let tx = d.transaction_id || d.tef || '';
-  html+=`<div class="card deposit" style="border-left-color:${color}"><div class="info"><p><b>${d.names||''}</b> | ${d.phone}</p><p><b>${d.amount} Frw</b> | <b style="color:${color}">${d.status}</b></p><p>Tx: ${tx}</p><p>${new Date(d.created_at).toLocaleString()}</p></div>${d.status=='pending'?`<div class="btn-group"><button class="btn-approve" onclick="approveDeposit('${d.id}','${d.phone}',${d.amount})">EMEZA</button><button class="btn-reject" onclick="rejectDeposit('${d.id}')">ANZA</button></div>`:''}</div>`;
+  html+=`<div class="card deposit" style="border-left-color:${color}"><div class="info"><p><b>${d.names||''}</b> | ${d.phone}</p><p><b>${d.amount} Frw</b> | <b style="color:${color}">${d.status}</b></p><p>Tx: ${tx}</p><p>${new Date(d.created_at).toLocaleString()}</p></div>${d.status=='pending'?`<div class="btn-group"><button class="btn-approve" onclick="approveDeposit('${d.id}','${d.phone}',${d.amount}, this)">EMEZA</button><button class="btn-reject" onclick="rejectDeposit('${d.id}')">ANZA</button></div>`:''}</div>`;
  });
  box.innerHTML=html;
 }
-async function approveDeposit(id,phone,amount){
+async function approveDeposit(id,phone,amount, btn){
+ if(btn) { btn.disabled=true; btn.innerText='⏳...'; }
  try{
+  const {data:check}=await supabaseClient.from('deposits').select('status').eq('id',id).single();
+  if(check && check.status=='approved'){ alert('⚠️ Yamaze kwemezwa!'); if(btn){btn.disabled=false; btn.innerText='EMEZA';} return; }
   const {data:profile}=await supabaseClient.from('profiles').select('*').eq('phone',phone).maybeSingle();
-  if(!profile) return alert('❌ User '+phone+' ntabashwe');
+  if(!profile) { alert('❌ User '+phone+' ntabashwe'); if(btn){btn.disabled=false; btn.innerText='EMEZA';} return; }
   let bonus = 0;
   let already = profile.has_deposited || profile.welcome_bonus_given || false;
   if(!already && amount >= 10000){ bonus = 1000; }
@@ -214,7 +217,7 @@ async function approveDeposit(id,phone,amount){
   }
   alert('✅ '+amount+' Frw yemejwe + LEV INSTANT!');
   loadAll(); loadDeposits();
- }catch(e){ alert('Error: '+e.message); }
+ }catch(e){ alert('Error: '+e.message); if(btn){btn.disabled=false; btn.innerText='EMEZA';} }
 }
 async function rejectDeposit(id){ await supabaseClient.from('deposits').update({status:'rejected'}).eq('id',id); loadAll(); }
 async function loadWithdraws(){
@@ -262,18 +265,19 @@ async function loadUsers(){
  if(!users||users.length==0){ box.innerHTML='Nta mukoresha'; return; }
  let html='<h3 style="color:#0088FF">👥 BOSE ('+users.length+')</h3>';
  users.forEach(u=>{
-  html+=`<div class="card user-card"><div class="info"><p><b>${u.names||''}</b> | ${u.phone}</p><p>Bal: ${(u.balance||0).toLocaleString()} | ${u.investment_status||'inactive'}</p><p style="font-size:10px;color:#888;">${u.created_at?new Date(u.created_at).toLocaleString():''} | RefBy: ${u.referred_by||'none'}</p></div><div style="display:flex;gap:5px;margin-top:8px;"><button class="btn-del" onclick="deleteUser('${u.id}','${u.phone}')" style="width:100%;">🗑️ SIBA ${u.phone}</button></div></div>`;
+  html+=`<div class="card user-card"><div class="info"><p><b>${u.names||''}</b> | ${u.phone}</p><p>Bal: ${(u.balance||0).toLocaleString()} | ${u.investment_status||'inactive'}</p><p style="font-size:10px;color:#888;">${u.created_at?new Date(u.created_at).toLocaleString():''} | RefBy: ${u.referred_by||'none'}</p></div><div style="display:flex;gap:5px;margin-top:8px;"><button class="btn-del" onclick="deleteUser('${u.phone}')" style="width:100%;">🗑️ SIBA ${u.phone}</button></div></div>`;
  });
  box.innerHTML=html;
 }
-async function deleteUser(id,phone){
+// ✅ FINAL FIXED DELETE - Koresha PHONE gusa nta ID
+async function deleteUser(phone){
  if(!confirm(`Siba burundu ${phone}?`)) return;
  try{
   await supabaseClient.from('deposits').delete().eq('phone', phone);
   await supabaseClient.from('withdrawals').delete().eq('phone', phone);
   await supabaseClient.from('tombola').delete().eq('phone', phone);
   await supabaseClient.from('referrals').delete().or(`referrer.eq.${phone},referred.eq.${phone}`);
-  const {error} = await supabaseClient.from('profiles').delete().eq('id', id);
+  const {error} = await supabaseClient.from('profiles').delete().eq('phone', phone);
   if(error){ alert('❌ '+error.message); return; }
   alert('🗑️ '+phone+' Yasibwe neza!');
   loadUsers(); loadAll();
