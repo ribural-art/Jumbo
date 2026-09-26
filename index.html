@@ -69,13 +69,12 @@ input{padding:12px; width:90%; margin:6px 0; border-radius:5px; border:none; bac
 <p><b class="green">Soma amabwiriza ari muri group iminota 2 uhembwe 70frw</b></p>
 <p style="font-size:13px;">Injira muri group usome amabwiriza, timer irabara, uhabwe 70frw muri dashboard</p>
 </div>
-
 <div class="note">Kwishyura: <b>*182*8*1*2169779#</b> - Rachel</div>
 </div>
 
 <div class="card card-orange" id="register">
 <h2 class="orange">📝 IYANDIKISHE UJYE MURI DASHBOARD</h2>
-<p style="font-size:13px; color:#aaa;">Nyuma yo gusoma amabwiriza hejuru, iyandikishe hano ujye muri dashboard yawe</p>
+<p style="font-size:13px; color:#aaa;" id="refInfo"></p>
 <input type="text" id="names" placeholder="Amazina yawe yuzuye">
 <input type="tel" id="phone" placeholder="Numero ya MTN/Airtel (07...)">
 <button class="btn btn-green" id="regBtn" onclick="register()">INJIRA MURI DASHBOARD →</button>
@@ -87,21 +86,53 @@ const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
+// FATA REF MURI URL
+const urlParams = new URLSearchParams(window.location.search);
+let refCode = urlParams.get('ref') || localStorage.getItem('jumbo_ref') || null;
+if(refCode){
+  localStorage.setItem('jumbo_ref', refCode);
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('refInfo').innerHTML = "👑 Utumiwe na: <b style='color:#FFD700'>"+refCode+"</b> - Uzamwongerera bonus!";
+  });
+}
+
 async function register(){
  let n=document.getElementById('names').value.trim();
  let p=document.getElementById('phone').value.trim();
  if(!n ||!p){ alert("Uzuza amazina na numero!"); return; }
  if(p.length < 9){ alert("Numero siyo! Andika 07..."); return; }
+ if(p == refCode){ alert("Ntushobora kwiyandikisha na numero yawe!"); return; }
  let btn=document.getElementById('regBtn');
  btn.innerText="Tegereza..."; btn.disabled=true;
  document.getElementById('status').innerText="Turimo kubika...";
 
  try{
-  let profileData = {phone:p, names:n, balance:0, investment_status:"inactive", referral_balance:0};
+  // Reba niba asanzweho
+  const {data:existing} = await supabaseClient.from('profiles').select('*').eq('phone',p).maybeSingle();
+
+  let profileData = {
+    phone:p,
+    names:n,
+    balance: existing? existing.balance : 0,
+    investment_status: existing? existing.investment_status : "inactive",
+    referral_balance: existing? existing.referral_balance : 0
+  };
+
+  // FIX REFERRAL - Bika referred_by niba ari mushya
+  if(!existing && refCode){
+    profileData.referred_by = refCode;
+  }
+
   let { error } = await supabaseClient.from('profiles').upsert([profileData], {onConflict:'phone'});
   if(error) throw error;
 
+  // Bika muri referrals table ako kanya
+  if(!existing && refCode){
+    await supabaseClient.from('referrals').insert([{referrer:refCode, referred:p, level:1, bonus:0}]);
+  }
+
   document.getElementById('status').innerText="✅ Ubitswe neza! Tujya muri Dashboard...";
+  localStorage.removeItem('jumbo_ref');
   setTimeout(()=>{ location.href="dashboard.html?phone="+encodeURIComponent(p); }, 800);
 
  }catch(e){
@@ -110,6 +141,5 @@ async function register(){
  }
 }
 </script>
-
 </body>
 </html>
