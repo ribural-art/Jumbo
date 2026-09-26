@@ -48,7 +48,7 @@ body{background:#0a0a0a;color:#fff;}
 <div class="top-header">
 <div style="font-size:28px;">👑</div>
 <h1 style="font-size:18px;font-weight:900;">JUMBO ROYALTY ADMIN PANEL</h1>
-<p style="font-size:10px;font-weight:bold;">SECURE LOGIN ✅</p>
+<p style="font-size:10px;font-weight:bold;">FIXED DELETE ✅</p>
 </div>
 <div class="login-page" id="loginPage">
 <div class="login-box">
@@ -184,46 +184,36 @@ async function approveDeposit(id,phone,amount){
   if(!profile) return alert('❌ User '+phone+' ntabashwe');
   let bonus = 0;
   let already = profile.has_deposited || profile.welcome_bonus_given || false;
-  if(!already && amount >= 10000){
-    bonus = 1000;
-  }
+  if(!already && amount >= 10000){ bonus = 1000; }
   let newBal = (profile.balance||0) + amount + bonus;
-  let upd = await supabaseClient.from('profiles').update({balance:newBal, has_deposited:true, welcome_bonus_given:true}).eq('phone',phone);
-  if(upd.error){
-    await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',phone);
-  }
+  await supabaseClient.from('profiles').update({balance:newBal, has_deposited:true, welcome_bonus_given:true}).eq('phone',phone);
   await supabaseClient.from('deposits').update({status:'approved'}).eq('id',id);
-
-  // LEV 10% - 2% - 1% INSTANT - YONYINE IYI NGEYEMO - SAFE
   if(profile.referred_by){
     const {data:u1} = await supabaseClient.from('profiles').select('phone,balance,referred_by').eq('phone',profile.referred_by).maybeSingle();
     if(u1){
       let b1 = Math.floor(amount * 0.10);
       await supabaseClient.from('profiles').update({balance:(u1.balance||0)+b1}).eq('phone',u1.phone);
+      await supabaseClient.from('referrals').insert([{referrer:u1.phone, referred:phone, level:1, bonus:b1}]);
       if(u1.referred_by){
         const {data:u2} = await supabaseClient.from('profiles').select('phone,balance,referred_by').eq('phone',u1.referred_by).maybeSingle();
         if(u2){
           let b2 = Math.floor(amount * 0.02);
           await supabaseClient.from('profiles').update({balance:(u2.balance||0)+b2}).eq('phone',u2.phone);
+          await supabaseClient.from('referrals').insert([{referrer:u2.phone, referred:phone, level:2, bonus:b2}]);
           if(u2.referred_by){
             const {data:u3} = await supabaseClient.from('profiles').select('phone,balance').eq('phone',u2.referred_by).maybeSingle();
             if(u3){
               let b3 = Math.floor(amount * 0.01);
               await supabaseClient.from('profiles').update({balance:(u3.balance||0)+b3}).eq('phone',u3.phone);
+              await supabaseClient.from('referrals').insert([{referrer:u3.phone, referred:phone, level:3, bonus:b3}]);
             }
           }
         }
       }
     }
   }
-
-  if(bonus>0){
-    alert('✅ '+amount+' Frw + Welcome '+bonus+' Frw + LEV INSTANT kuri '+phone);
-  } else {
-    alert('✅ '+amount+' Frw yemejwe + LEV 10%/2%/1% INSTANT!');
-  }
-  loadAll();
-  loadDeposits();
+  alert('✅ '+amount+' Frw yemejwe + LEV INSTANT!');
+  loadAll(); loadDeposits();
  }catch(e){ alert('Error: '+e.message); }
 }
 async function rejectDeposit(id){ await supabaseClient.from('deposits').update({status:'rejected'}).eq('id',id); loadAll(); }
@@ -254,11 +244,9 @@ async function loadTombola(){
 async function doDraw(level){
  const {data:tickets}=await supabaseClient.from('tombola').select('*').eq('level',level);
  let cfg=TOMBOLA_CFG[level];
- if(!tickets || tickets.length < cfg.target){
-   return alert('❌ LEV '+level+' NTIRUZUYE!\nIbura: '+(cfg.target-(tickets?tickets.length:0)));
- }
+ if(!tickets || tickets.length < cfg.target){ return alert('❌ LEV '+level+' NTIRUZUYE!\nIbura: '+(cfg.target-(tickets?tickets.length:0))); }
  let winners=[...tickets].sort(()=>0.5-Math.random()).slice(0,5);
- let html=`<h4 style="color:#00FF00">ABATSINZE LEV ${level} - Profit ${(tickets.length*cfg.price-5*cfg.prize).toLocaleString()}</h4>`;
+ let html=`<h4 style="color:#00FF00">ABATSINZE LEV ${level}</h4>`;
  winners.forEach((w,i)=>{ html+=`<div class="card" style="background:#002200;"><p><b>#${i+1} ${w.phone}</b></p><button class="btn-approve" style="width:100%" onclick="givePrize('${w.phone}',${cfg.prize})">EMEZA ${cfg.prize}frw</button></div>`; });
  document.getElementById('winners'+level).innerHTML=html;
 }
@@ -274,14 +262,22 @@ async function loadUsers(){
  if(!users||users.length==0){ box.innerHTML='Nta mukoresha'; return; }
  let html='<h3 style="color:#0088FF">👥 BOSE ('+users.length+')</h3>';
  users.forEach(u=>{
-  html+=`<div class="card user-card"><div class="info"><p><b>${u.names||''}</b> | ${u.phone}</p><p>Bal: ${(u.balance||0).toLocaleString()} | ${u.investment_status||'inactive'}</p><p style="font-size:10px;color:#888;">${u.created_at?new Date(u.created_at).toLocaleString():''}</p></div><div style="display:flex;gap:5px;margin-top:8px;"><button class="btn-del" onclick="deleteUser('${u.id}','${u.phone}')" style="width:100%;">🗑️ SIBA ${u.phone}</button></div></div>`;
+  html+=`<div class="card user-card"><div class="info"><p><b>${u.names||''}</b> | ${u.phone}</p><p>Bal: ${(u.balance||0).toLocaleString()} | ${u.investment_status||'inactive'}</p><p style="font-size:10px;color:#888;">${u.created_at?new Date(u.created_at).toLocaleString():''} | RefBy: ${u.referred_by||'none'}</p></div><div style="display:flex;gap:5px;margin-top:8px;"><button class="btn-del" onclick="deleteUser('${u.id}','${u.phone}')" style="width:100%;">🗑️ SIBA ${u.phone}</button></div></div>`;
  });
  box.innerHTML=html;
 }
 async function deleteUser(id,phone){
- if(!confirm(`Siba ${phone}?`)) return;
- await supabaseClient.from('profiles').delete().eq('id',id);
- alert('🗑️ '+phone+' Yasibwe!'); loadUsers(); loadAll();
+ if(!confirm(`Siba burundu ${phone}?`)) return;
+ try{
+  await supabaseClient.from('deposits').delete().eq('phone', phone);
+  await supabaseClient.from('withdrawals').delete().eq('phone', phone);
+  await supabaseClient.from('tombola').delete().eq('phone', phone);
+  await supabaseClient.from('referrals').delete().or(`referrer.eq.${phone},referred.eq.${phone}`);
+  const {error} = await supabaseClient.from('profiles').delete().eq('id', id);
+  if(error){ alert('❌ '+error.message); return; }
+  alert('🗑️ '+phone+' Yasibwe neza!');
+  loadUsers(); loadAll();
+ }catch(e){ alert('Error: '+e.message); }
 }
 window.addEventListener('DOMContentLoaded',()=>{
  if(localStorage.getItem('admin_logged')=='yes'){
@@ -292,4 +288,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 </body>
- </html>
+</html>
