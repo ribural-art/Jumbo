@@ -50,7 +50,6 @@ body{background:#0a0a0a;color:#fff;}
 <h1 style="font-size:18px;font-weight:900;">JUMBO ROYALTY ADMIN PANEL</h1>
 <p style="font-size:10px;font-weight:bold;">SECURE LOGIN ✅</p>
 </div>
-
 <div class="login-page" id="loginPage">
 <div class="login-box">
 <h2>👑 ADMIN LOGIN</h2>
@@ -59,10 +58,8 @@ body{background:#0a0a0a;color:#fff;}
 <p class="error" id="error">Password si yo!</p>
 </div>
 </div>
-
 <div class="admin-page" id="adminPage">
 <div class="header"><h2 style="font-size:14px;">👑 ROYALTY ADMIN PRO</h2><button class="logout" onclick="logout()">SOHOKA</button></div>
-
 <div class="settings-box">
 <h3>🔐 HINDURA PASSWORD YA ADMIN</h3>
 <input type="password" id="oldPass" placeholder="Password ya kera">
@@ -71,7 +68,6 @@ body{background:#0a0a0a;color:#fff;}
 <button class="btn-small btn-green" onclick="changeAdminPass()" style="margin-top:8px;">✅ HINDURA PASSWORD</button>
 <button class="btn-small btn-orange" onclick="resetToDefault()" style="margin-top:5px;">🔄 Garura kuri Jumbo@2026</button>
 </div>
-
 <div class="stats">
 <div class="stat-card"><h4>👥 Abakoresha Bose</h4><p id="totalUsers">0</p><small id="usersToday">+0 uyu munsi</small></div>
 <div class="stat-card"><h4>💰 Yinjiye Yose</h4><p id="totalDeposit">0 Frw</p><small id="depositPendingCount">Pending: 0</small></div>
@@ -79,14 +75,12 @@ body{background:#0a0a0a;color:#fff;}
 <div class="stat-card"><h4>📈 Daily Income</h4><p id="dailyIncome">0 Frw</p><small id="dailyTickets">Tickets: 0</small></div>
 <div class="stat-card jackpot-card"><h4>👑 JACKPOT YA TOMBOLA</h4><p id="jackpot">0 Frw</p></div>
 </div>
-
 <div class="tabs">
 <div class="tab active" onclick="showTab('deposit',this)">Deposits</div>
 <div class="tab" onclick="showTab('withdraw',this)">Withdraws</div>
 <div class="tab" onclick="showTab('tombola',this)">TOMBOLA 👑</div>
 <div class="tab" onclick="showTab('users',this)">Abakoresha</div>
 </div>
-
 <div id="depositTab"></div>
 <div id="withdrawTab" style="display:none;"></div>
 <div id="tombolaTab" style="display:none;">
@@ -97,14 +91,12 @@ body{background:#0a0a0a;color:#fff;}
 </div>
 <div id="usersTab" style="display:none;"><div id="usersList"></div></div>
 </div>
-
 <script>
 const SUPABASE_URL='https://grbltjhhjnvuiezhspau.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYmx0amhoam52dWllemhzcGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NjgyNTEsImV4cCI6MjEwNDI0NDI1MX0.5Jj0uW7gJiatdIh4KMA7kxOnA9AmDBYEbWxSiBpCME8';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let ADMIN_PASS=localStorage.getItem('admin_pass')||"Jumbo@2026";
 const TOMBOLA_CFG={1:{price:300,target:334,prize:10000,need:100200},2:{price:500,target:300,prize:15000,need:150000},3:{price:1000,target:200,prize:20000,need:200000}};
-
 function login(){
  let p=document.getElementById('password').value.trim();
  if(p==ADMIN_PASS){
@@ -196,16 +188,39 @@ async function approveDeposit(id,phone,amount){
     bonus = 1000;
   }
   let newBal = (profile.balance||0) + amount + bonus;
-  // Try update with flags, fallback to balance only if columns missing
   let upd = await supabaseClient.from('profiles').update({balance:newBal, has_deposited:true, welcome_bonus_given:true}).eq('phone',phone);
   if(upd.error){
     await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',phone);
   }
   await supabaseClient.from('deposits').update({status:'approved'}).eq('id',id);
+
+  // LEV 10% - 2% - 1% INSTANT - YONYINE IYI NGEYEMO - SAFE
+  if(profile.referred_by){
+    const {data:u1} = await supabaseClient.from('profiles').select('phone,balance,referred_by').eq('phone',profile.referred_by).maybeSingle();
+    if(u1){
+      let b1 = Math.floor(amount * 0.10);
+      await supabaseClient.from('profiles').update({balance:(u1.balance||0)+b1}).eq('phone',u1.phone);
+      if(u1.referred_by){
+        const {data:u2} = await supabaseClient.from('profiles').select('phone,balance,referred_by').eq('phone',u1.referred_by).maybeSingle();
+        if(u2){
+          let b2 = Math.floor(amount * 0.02);
+          await supabaseClient.from('profiles').update({balance:(u2.balance||0)+b2}).eq('phone',u2.phone);
+          if(u2.referred_by){
+            const {data:u3} = await supabaseClient.from('profiles').select('phone,balance').eq('phone',u2.referred_by).maybeSingle();
+            if(u3){
+              let b3 = Math.floor(amount * 0.01);
+              await supabaseClient.from('profiles').update({balance:(u3.balance||0)+b3}).eq('phone',u3.phone);
+            }
+          }
+        }
+      }
+    }
+  }
+
   if(bonus>0){
-    alert(`✅ ${amount} Frw + 🎁 Bonus ${bonus} Frw = ${newBal} Frw kuri ${phone}`);
+    alert('✅ '+amount+' Frw + Welcome '+bonus+' Frw + LEV INSTANT kuri '+phone);
   } else {
-    alert(`✅ ${amount} Frw yemejwe kuri ${phone}`);
+    alert('✅ '+amount+' Frw yemejwe + LEV 10%/2%/1% INSTANT!');
   }
   loadAll();
   loadDeposits();
@@ -251,7 +266,7 @@ async function givePrize(phone,prize){
  const {data:p}=await supabaseClient.from('profiles').select('balance').eq('phone',phone).maybeSingle();
  let newBal=(p?.balance||0)+prize;
  await supabaseClient.from('profiles').update({balance:newBal}).eq('phone',phone);
- alert(`✅ ${phone} ahawe ${prize}`);
+ alert('✅ '+phone+' ahawe '+prize);
 }
 async function loadUsers(){
  let box=document.getElementById('usersList'); box.innerHTML='Loading...';
@@ -268,7 +283,6 @@ async function deleteUser(id,phone){
  await supabaseClient.from('profiles').delete().eq('id',id);
  alert('🗑️ '+phone+' Yasibwe!'); loadUsers(); loadAll();
 }
-// AUTO-LOGIN - ntibangamira Supabase, ni localStorage gusa
 window.addEventListener('DOMContentLoaded',()=>{
  if(localStorage.getItem('admin_logged')=='yes'){
    document.getElementById('loginPage').style.display='none';
