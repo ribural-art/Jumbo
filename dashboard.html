@@ -81,26 +81,22 @@ input,select{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;
 <div class="card" style="border-color:#00FF00;">
 <h3>📢 AKAZI KA ADS - 70Frw</h3>
 <p style="font-size:11px;color:#aaa;text-align:center;">Injira muri group usome AMABWIRIZA iminota 2</p>
-
 <div style="background:#0a0a0a;border:2px solid #0088cc;border-radius:12px;padding:12px;margin:10px 0;text-align:center;">
 <p style="color:#0088cc;font-weight:bold;font-size:11px;">📢 TELEGRAM - Ntahembwa</p>
 <a href="https://t.me/riyaltygh" target="_blank"><button style="background:#0088cc;color:#fff;padding:10px 20px;border:none;border-radius:8px;font-weight:bold;width:100%;margin-top:5px;">JOIN TELEGRAM</button></a>
 </div>
-
 <div style="background:#0a0a0a;border:2px solid #25D366;border-radius:12px;padding:12px;margin:10px 0;">
 <p style="color:#25D366;font-weight:bold;font-size:11px;text-align:center;">💬 WHATSAPP GROUP 1 - ADS 70Frw</p>
 <a href="https://chat.whatsapp.com/HTi8rrw6kLG9Q7uYyp66EC" target="_blank" class="btn" style="background:#25D366;color:#fff;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer(1)">JOIN GROUP 1</a>
 <p id="adsTimer1" style="color:#FFD700;margin-top:8px;font-weight:bold;text-align:center;font-size:11px;"></p>
 <button class="btn" id="claimAdsBtn1" style="display:none;background:#00FF00;color:#000;" onclick="claimAds(1,70)">CLAIM 70Frw →</button>
 </div>
-
 <div style="background:#0a0a0a;border:2px solid #FFD700;border-radius:12px;padding:12px;margin:10px 0;">
 <p style="color:#FFD700;font-weight:bold;font-size:11px;text-align:center;">💬 WHATSAPP GROUP 2 - ADS 70Frw - Nshya!</p>
 <a href="https://chat.whatsapp.com/DIRUfmbg1gYH28uvc90fuh" target="_blank" class="btn" style="background:#FFD700;color:#000;text-decoration:none;display:block;text-align:center;" onclick="startAdsTimer(2)">JOIN GROUP 2</a>
 <p id="adsTimer2" style="color:#FFD700;margin-top:8px;font-weight:bold;text-align:center;font-size:11px;"></p>
 <button class="btn" id="claimAdsBtn2" style="display:none;background:#00FF00;color:#000;" onclick="claimAds(2,70)">CLAIM 70Frw →</button>
 </div>
-
 </div>
 
 <div class="card">
@@ -136,6 +132,7 @@ let USER_PHONE = urlParams.get('phone');
 let USER_NAME = "";
 function checkLogin(){
  if(!USER_PHONE){ location.href='index.html'; return; }
+ localStorage.setItem('jumbo_phone', USER_PHONE);
  loadUserData();
  generateRefLink(USER_PHONE);
  loadTeamCounts();
@@ -149,11 +146,10 @@ async function loadUserData(){
   document.getElementById('username').innerText = p.names || p.phone;
   document.getElementById('balance').innerText = (p.balance||0).toLocaleString()+' Frw';
   document.getElementById('investmentStatus').innerText = '✅ '+(p.investment_status||'inactive')+' - '+(p.investment_amount||0).toLocaleString()+' Frw';
-
   let investAmt = p.investment_amount||0;
-  let daily = Math.floor(investAmt*(p.daily_rate||0.15));
+  let rate = p.daily_rate || 0.04;
+  let daily = Math.floor(investAmt*rate);
   document.getElementById('dailyAmount').innerText = daily.toLocaleString()+' Frw';
-
   if(investAmt>0){
     let last = new Date(p.last_daily_claim || p.investment_date || p.created_at).getTime();
     let next = last + 24*60*60*1000;
@@ -169,10 +165,8 @@ async function loadUserData(){
   } else {
     document.getElementById('dailyCountdown').innerText='Nta investment';
   }
-
   if(localStorage.getItem('wa1_'+USER_PHONE)=='claimed') document.getElementById('adsTimer1').innerText='✅ 70Frw yakiriwe';
   if(localStorage.getItem('wa2_'+USER_PHONE)=='claimed') document.getElementById('adsTimer2').innerText='✅ 70Frw yakiriwe';
-
  }catch(e){ console.log(e.message); }
 }
 function go(page){ location.href = page + "?phone=" + encodeURIComponent(USER_PHONE); }
@@ -185,7 +179,7 @@ async function sendDeposit(){
  if(error) alert(error.message); else { alert('✅ Deposit yoherejwe!'); document.getElementById('amount').value=''; document.getElementById('tef').value=''; }
 }
 function generateRefLink(phone){
-  let baseUrl = 'https://jumbo-omega.vercel.app';
+  let baseUrl = window.location.origin;
   document.getElementById('refLink').innerText = baseUrl+'/?ref='+phone;
 }
 function copyRef(){ navigator.clipboard.writeText(document.getElementById('refLink').innerText); alert('Link ikoporowe!'); }
@@ -199,8 +193,7 @@ async function loadHistory(type){
   box.innerHTML=html;
  }catch(e){ box.innerHTML='Error: '+e.message; }
 }
-function logout(){ location.href='index.html'; }
-
+function logout(){ localStorage.removeItem('jumbo_phone'); location.href='index.html'; }
 let adsIntervals={}; let adsStarts={};
 function startAdsTimer(n){
   if(!adsStarts[n]) adsStarts[n]=Date.now();
@@ -241,15 +234,22 @@ async function claimAds(n, amount){
 async function loadTeamCounts(){
   try{
     const {data:lev1}=await supabaseClient.from('profiles').select('phone').eq('referred_by',USER_PHONE);
-    let c1=lev1?lev1.length:0; let c2=0;
-    if(lev1) for(let u of lev1){
-      const {data:l2}=await supabaseClient.from('profiles').select('phone').eq('referred_by',u.phone);
-      if(l2) c2+=l2.length;
+    let c1=lev1?lev1.length:0;
+    let c2=0, c3=0;
+    if(c1>0){
+      let phones1 = lev1.map(u=>u.phone);
+      const {data:l2}=await supabaseClient.from('profiles').select('phone').in('referred_by',phones1);
+      c2 = l2?l2.length:0;
+      if(c2>0){
+        let phones2 = l2.map(u=>u.phone);
+        const {data:l3}=await supabaseClient.from('profiles').select('phone').in('referred_by',phones2);
+        c3 = l3?l3.length:0;
+      }
     }
-    document.getElementById('teamCounts').innerText='LEV1:'+c1+' | LEV2:'+c2+' | Bonus AUTO → Wallet';
+    document.getElementById('teamCounts').innerText='LEV1:'+c1+' | LEV2:'+c2+' | LEV3:'+c3+' | Bonus AUTO';
   }catch(e){}
 }
 checkLogin();
 </script>
 </body>
- </html>
+</html>
